@@ -1,10 +1,12 @@
+## An unofficial Linux port of Wino Mail by bkaankose
+
 <p align="center">
   <a href="https://apps.microsoft.com/detail/Wino%20Mail/9NCRCVJC50WL?launch=true&mode=full">
     <img src="https://www.winomail.app/logo.png" width="90" height="90" alt="Wino Mail logo">
   </a>
 </p>
 
-<h1 align="center">Wino Mail</h1>
+<h1 align="center">WinoLux Mail</h1>
 
 <p align="center">A native Mail, Calendar, People, and To Do client for Windows.</p>
 
