@@ -11,6 +11,7 @@ Commands use paths relative to the repository root unless stated otherwise.
 | [macOS development](harness/development-macos.md) | macOS | SDK and Xcode, AppKit, CoreCLR, signing, sandbox, Keychain, storage, activation, and F5. |
 | [iOS development](harness/development-ios.md) | iOS, iPadOS | iOS workload and Simulator, UIKit, signing, entitlements, Keychain, storage, activation, and the Debug bridge. |
 | [Android development](harness/development-android.md) | Android | Android workload, JDK and SDK, emulators, build and run with adb, sign-in registrations, and troubleshooting. |
+| [Linux development](harness/development-linux.md) | Linux (WinoLux fork) | Planned GTK 4 and libadwaita head: requirements, platform selection, CI, sign-in registrations, and verification. |
 | [Implementation rules](harness/implementation-rules.md) | All | C#, localization, storage, and architecture conventions, plus WinUI XAML rules. |
 | [Local script environment](local-script-environment.md) | Windows, macOS | Environment variables and prerequisites for release signing and translation maintenance. |
 | [Release packages](releases.md) | All | Shared release steps, with the [Windows](releases-windows.md), [macOS](releases-macos.md), and [Android](releases-android.md) guides. |
@@ -18,6 +19,7 @@ Commands use paths relative to the repository root unless stated otherwise.
 | [macOS design decisions](macos-design-decisions.md) | macOS | Authoritative AppKit shell, workflow, and control decisions. |
 | [iOS design decisions](ios-design-decisions.md) | iOS, iPadOS | iPhone and iPad shell decisions, differences from the Mac, project map, and implementation status. |
 | [Android design decisions](android-design-decisions.md) | Android | Size classes, control mapping, background model, deferred features, and open review items. |
+| [Linux design decisions](linux-design-decisions.md) | Linux (WinoLux fork) | Proposed GNOME shell, control mapping, capabilities, and open review items. |
 | [Android port investigation](android-port-investigation.md) | Android | Background study of 10 Oct 2026; the Android design decisions supersede it where they differ. |
 | [macOS shared-logic roadmap](macos-shared-logic-roadmap.md) | All | Phased plan for moving duplicated Mac logic into shared code. |
 | [Visual design reference](design-prototypes/wino-design-guideline.html) | Windows | Browser presentation of the design conventions. The Markdown guideline is the primary reference. |
