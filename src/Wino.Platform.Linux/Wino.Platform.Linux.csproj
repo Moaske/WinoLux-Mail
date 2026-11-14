@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Linux platform services for the GTK app (Wino.Mail.Linux, WinoLux fork): XDG paths, Secret Service-backed
+       protection, secure items and the platform adapters, registered by AddLinuxPlatformServices. No presentation
+       references, so it keeps the shared Release gate like the other shared libraries. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Wino.Platform.Linux</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Wino.Core.Domain/Wino.Core.Domain.csproj" />
+    <ProjectReference Include="../Wino.Authentication/Wino.Authentication.csproj" />
+    <ProjectReference Include="../Wino.Services/Wino.Services.csproj" />
+  </ItemGroup>
+</Project>

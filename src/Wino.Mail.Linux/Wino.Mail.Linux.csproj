@@ -2,6 +2,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Wino.Mail.Linux</RootNamespace>
     <AssemblyName>WinoLux</AssemblyName>
     <WinoGtkProject>true</WinoGtkProject>
@@ -15,9 +17,20 @@
 
   <ItemGroup>
     <PackageReference Include="GirCore.Adw-1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Wino.Core.Domain\Wino.Core.Domain.csproj" />
+    <ProjectReference Include="..\Wino.Platform.Linux\Wino.Platform.Linux.csproj" />
+    <ProjectReference Include="..\Wino.Core\Wino.Core.csproj" />
+    <ProjectReference Include="..\Wino.Mail.ViewModels\Wino.Mail.ViewModels.csproj" />
+  </ItemGroup>
+
+  <!-- Files the shared services read as packaged resources (LinuxPaths.PackagedResourceRoot, next to the program):
+       provider logos and the What's New release notes, as the Android head ships them. -->
+  <ItemGroup>
+    <Content Include="../Wino.Mail.WinUI/Assets/Providers/*.png" Link="PackagedResources/Assets/Providers/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../Wino.Mail.WinUI/Assets/WhatsNew/*.json;../Wino.Mail.WinUI/Assets/WhatsNew/*.png" Link="PackagedResources/Assets/WhatsNew/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
