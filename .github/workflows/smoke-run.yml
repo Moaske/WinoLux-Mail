@@ -40,6 +40,7 @@ jobs:
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
+            for f in screen-first.png screen-second.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
           '
       - uses: actions/upload-artifact@v5
         if: always()
