@@ -29,11 +29,11 @@ jobs:
       - name: Debug build (shared projects and Linux head)
         run: dotnet build WinoMail.Linux.slnx -c Debug
 
-      - name: Release gate (shared projects; GTK projects exempt here, see the AOT probe)
-        run: dotnet build WinoMail.Linux.slnx -c Release -p:WinoGtkAotExempt=true
+      - name: Release gate (shared and GTK projects)
+        run: dotnet build WinoMail.Linux.slnx -c Release
 
       - name: Publish linux-x64
-        run: dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoGtkAotExempt=true -o artifacts/WinoLux
+        run: dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -o artifacts/WinoLux
 
       - name: Pack archive
         run: tar -C artifacts -czf WinoLux-linux-x64.tar.gz WinoLux
@@ -44,10 +44,9 @@ jobs:
           path: WinoLux-linux-x64.tar.gz
           retention-days: 14
 
-  aot-probe:
-    name: Native AOT probe (open item L5)
+  aot:
+    name: Native AOT build (linux-x64)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
 
@@ -90,7 +89,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Native AOT probe"
+            echo "## Native AOT build"
             echo
             echo "- AOT gate build: ${{ steps.gate.outcome }}"
             echo "- Native AOT publish: ${{ steps.aot.outcome }}"

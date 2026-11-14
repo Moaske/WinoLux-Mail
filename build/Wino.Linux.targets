@@ -3,9 +3,9 @@
        A Linux host selects Linux when no platform is passed. The shared libraries target plain net10.0 and keep
        the repository-wide Release gate (Native AOT, trimming, warnings as errors) unchanged. -->
 
-  <!-- GTK projects (the head and the Gtk control libraries) set WinoGtkProject. Whether they keep the Native AOT
-       gate is open item L5 in docs/linux-design-decisions.md; the CI AOT probe measures it. If Gir.Core cannot
-       pass, WinoGtkAotExempt exempts only these projects, as the Apple and Android heads are exempt. -->
+  <!-- GTK projects (the head and the Gtk control libraries) set WinoGtkProject and keep the Native AOT gate
+       (L5 in docs/linux-design-decisions.md). WinoGtkAotExempt exempts only these projects, as the Apple and
+       Android heads are exempt; use it only for a Gir.Core feature that cannot pass. -->
   <PropertyGroup Condition="'$(WinoGtkProject)' == 'true' and '$(WinoGtkAotExempt)' == 'true'">
     <IsAotCompatible>false</IsAotCompatible>
     <PublishAot>false</PublishAot>

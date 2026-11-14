@@ -33,7 +33,7 @@ The same run offers `WinoLux-linux-x64-aot`: the Native AOT build of the head (a
 
 Linux builds use `WinoTargetPlatform=Linux`. As for Windows and macOS, a Linux host selects it when the value is not passed; an explicit `-p:WinoTargetPlatform=...` wins. `Directory.Build.targets` imports `build/Wino.Linux.targets` when `WinoTargetPlatform` is `Linux`.
 
-The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. GTK projects set `WinoGtkProject`. They keep the gate too unless `WinoGtkAotExempt=true` is passed; whether they need that is L5 in the design decisions, measured by the AOT probe below.
+The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. GTK projects set `WinoGtkProject`. They keep the gate too (L5 in the design decisions), and CI enforces it on every push. `WinoGtkAotExempt=true` exempts only the GTK projects; use it only for a Gir.Core feature that cannot pass, and record why in the design decisions.
 
 ## Projects
 
@@ -59,7 +59,7 @@ dotnet run --project src/Wino.Mail.Linux/Wino.Mail.Linux.csproj
 The head publishes self-contained for `linux-x64` unless another `-r` is passed. Release archive and Native AOT build, as the workflow builds them:
 
 ```sh
-dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoGtkAotExempt=true -o artifacts/WinoLux
+dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -o artifacts/WinoLux
 dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoLinuxNativeAot=true -o aot
 ```
 
@@ -73,8 +73,8 @@ Two workflows run in GitHub Actions:
 
 | Workflow | Job | Runner | When | Checks |
 | --- | --- | --- | --- | --- |
-| `linux.yml` | Build and package | `ubuntu-latest` | Every push | Debug build of `WinoMail.Linux.slnx`; Release gate for the shared projects (GTK projects exempt in this step); self-contained `linux-x64` publish; uploads `WinoLux-linux-x64` |
-| `linux.yml` | Native AOT probe | `ubuntu-latest` | Every push | Release build of the head with the full AOT gate, then a Native AOT publish; uploads `WinoLux-linux-x64-aot`; trim and AOT warnings in the run summary. Informational (L5) |
+| `linux.yml` | Build and package | `ubuntu-latest` | Every push | Debug build of `WinoMail.Linux.slnx`; Release gate for the shared and GTK projects; self-contained `linux-x64` publish; uploads `WinoLux-linux-x64` |
+| `linux.yml` | Native AOT build | `ubuntu-latest` | Every push | Native AOT publish of the head; uploads `WinoLux-linux-x64-aot` (the release build, L5); trim and AOT warnings in the run summary |
 | `shared-gate.yml` | Windows | `windows-latest` | Pull requests and `main` pushes that touch shared code or build files | Windows Debug x64 build and the Release x64 gate from `AGENTS.md` |
 | `shared-gate.yml` | Android | `windows-latest` | As above | Android Debug build, with the workload set pinned to 10.0.401.1 as the Android guide requires |
 
