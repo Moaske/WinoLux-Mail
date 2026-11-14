@@ -1,0 +1,17 @@
+<Project>
+  <!-- Linux build policy (WinoLux fork), imported by Directory.Build.targets when WinoTargetPlatform is Linux.
+       A Linux host selects Linux when no platform is passed. The shared libraries target plain net10.0 and keep
+       the repository-wide Release gate (Native AOT, trimming, warnings as errors) unchanged. -->
+
+  <!-- GTK projects (the head and the Gtk control libraries) set WinoGtkProject. Whether they keep the Native AOT
+       gate is open item L5 in docs/linux-design-decisions.md; the CI AOT probe measures it. If Gir.Core cannot
+       pass, WinoGtkAotExempt exempts only these projects, as the Apple and Android heads are exempt. -->
+  <PropertyGroup Condition="'$(WinoGtkProject)' == 'true' and '$(WinoGtkAotExempt)' == 'true'">
+    <IsAotCompatible>false</IsAotCompatible>
+    <PublishAot>false</PublishAot>
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+  </PropertyGroup>
+
+  <!-- Runtime identifier and self-contained publishing live in the head's project file: the SDK resolves them
+       before this file is evaluated. -->
+</Project>
