@@ -1,0 +1,48 @@
+name: Smoke run (temporary, never merged)
+
+on:
+  push:
+    branches: [smoke/linux-run]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Desktop libraries, virtual screen, keyring
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring dbus-x11 xvfb imagemagick x11-utils
+          cat /etc/os-release | grep PRETTY; dpkg -l | grep -E "libadwaita-1-0|libgtk-4-1 " | awk '{print $2, $3}'
+      - name: Publish
+        run: dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Debug -r linux-x64 -o run
+      - name: Run under a virtual screen
+        run: |
+          export HOME="$RUNNER_TEMP/home"; mkdir -p "$HOME"
+          dbus-run-session -- bash -c '
+            echo -n "smoke" | gnome-keyring-daemon --unlock --components=secrets >/dev/null
+            Xvfb :99 -screen 0 1280x800x24 & export DISPLAY=:99; sleep 2
+            ( ./run/WinoLux > app.out 2>&1; echo "exit code $?" >> app.out ) &
+            sleep 25
+            import -window root screen-first.png
+            pkill -INT WinoLux || true; sleep 3
+            echo "--- second launch (existing installation)"
+            ( ./run/WinoLux > app2.out 2>&1; echo "exit code $?" >> app2.out ) &
+            sleep 15
+            import -window root screen-second.png
+            pkill -INT WinoLux || true; sleep 2
+            echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out
+            echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
+            echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
+          '
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: smoke
+          path: "*.png"
