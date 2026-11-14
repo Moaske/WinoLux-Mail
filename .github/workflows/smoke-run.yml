@@ -18,10 +18,12 @@ jobs:
       - name: Desktop libraries, virtual screen, keyring
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring dbus-x11 xvfb imagemagick x11-utils
+          sudo apt-get install -y clang zlib1g-dev libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring dbus-x11 xvfb imagemagick x11-utils
           cat /etc/os-release | grep PRETTY; dpkg -l | grep -E "libadwaita-1-0|libgtk-4-1 " | awk '{print $2, $3}'
       - name: Publish
-        run: dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Debug -r linux-x64 -o run
+        run: |
+          dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Debug -r linux-x64 -o run
+          dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoLinuxNativeAot=true -p:TreatWarningsAsErrors=false -o aot
       - name: Run under a virtual screen
         run: |
           export HOME="$RUNNER_TEMP/home"; mkdir -p "$HOME"
@@ -37,10 +39,15 @@ jobs:
             sleep 15
             import -window root screen-second.png
             pkill -INT WinoLux || true; sleep 2
-            echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out
+            echo "--- third launch (Native AOT, existing installation)"
+            ( ./aot/WinoLux > app3.out 2>&1; echo "exit code $?" >> app3.out ) &
+            sleep 12
+            import -window root screen-aot.png
+            pkill -INT WinoLux || true; sleep 2
+            echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
-            for f in screen-first.png screen-second.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
+            for f in screen-first.png screen-second.png screen-aot.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
           '
       - uses: actions/upload-artifact@v5
         if: always()
