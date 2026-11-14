@@ -9,6 +9,8 @@
          (for example linux-arm64) wins. -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">linux-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
+    <!-- Set only on the head: a global PublishAot would also reach the netstandard2.0 source generator. -->
+    <PublishAot Condition="'$(WinoLinuxNativeAot)' == 'true'">true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
