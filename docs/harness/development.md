@@ -8,6 +8,7 @@ Wino Mail has four native applications in one repository. They share the .NET ba
 | macOS | `src/Wino.Mail.MacOS` (AppKit) | `WinoMail.MacOS.slnx` | [macOS development](development-macos.md) |
 | iOS and iPadOS | `src/Wino.Mail.iOS` (UIKit, built on a Mac) | `WinoMail.iOS.slnx` | [iOS development](development-ios.md) |
 | Android | `src/Wino.Mail.Android` (Android Views, built on a Mac or Windows) | `WinoMail.Android.slnx` | [Android development](development-android.md) |
+| Linux (WinoLux fork, planned) | `src/Wino.Mail.Linux` (GTK 4 and libadwaita, built on Linux) | `WinoMail.Linux.slnx` | [Linux development](development-linux.md) |
 
 Use the guide for the platform you change. A shared change, such as one in `src/Wino.Core`, `src/Wino.Services`, `src/Wino.Mail.ViewModels`, `controls/*.Core`, or translations, affects every application: follow the verification in [AGENTS.md](../../AGENTS.md) for each of them. The Apple shared layer (`Wino.Platform.Apple`, `Wino.Core.Apple.Bindings`, `controls/Wino.Editor.WebKit`) affects the macOS and iOS applications. Android-only code (`Wino.Platform.Android`, `controls/*.Android`) affects the Android application only.
 

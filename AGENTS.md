@@ -8,6 +8,7 @@ Wino Mail is a native mail, calendar, contacts, and To Do client with four appli
 | macOS | `src/Wino.Mail.MacOS` (AppKit, CoreCLR) | `WinoMail.MacOS.slnx` | [macOS development](docs/harness/development-macos.md) |
 | iOS and iPadOS | `src/Wino.Mail.iOS` (UIKit, Mono), UI projects `Wino.Mail.UIKit` and `.Phone` (the shell for iPhone and iPad) | `WinoMail.iOS.slnx` | [iOS development](docs/harness/development-ios.md) |
 | Android | `src/Wino.Mail.Android` (Android Views with XML layouts, AndroidX, Material, Mono) | `WinoMail.Android.slnx` | [Android development](docs/harness/development-android.md) |
+| Linux (WinoLux fork, planned) | `src/Wino.Mail.Linux` (GTK 4 and libadwaita through Gir.Core, CoreCLR) | `WinoMail.Linux.slnx` | [Linux development](docs/harness/development-linux.md) |
 
 All applications use the shared backend: `Wino.Core.Domain`, `Wino.Core`, `Wino.Services`, `Wino.Authentication`, `Wino.Messaging`, `Wino.Core.ML`, `Wino.Mail.ViewModels`, `controls/Wino.Mail.Controls.Core`, and `controls/Wino.Editor.Core`.
 Platform services live in `Wino.Platform.Windows`, `Wino.Platform.MacOS`, `Wino.Platform.iOS`, and `Wino.Platform.Android`. The Apple apps share `Wino.Platform.Apple` (Foundation-level services: paths, configuration, Keychain, StoreKit, notifications), `Wino.Core.Apple.Bindings`, and `controls/Wino.Editor.WebKit`; `Wino.Platform.MacOS` and `Wino.Platform.iOS` hold only AppKit-only and UIKit-only services. Do not change the deprecated UWP project.
@@ -18,6 +19,7 @@ Platform services live in `Wino.Platform.Windows`, `Wino.Platform.MacOS`, `Wino.
 - **macOS change** (AppKit head, Mac platform services, AppKit controls, entitlements, `build/Wino.MacOS.*`, Mac scripts): read the [macOS guide](docs/harness/development-macos.md).
 - **iOS change** (iOS head, `Wino.Mail.UIKit*`, iOS platform services, UIKit controls, `Info.plist`, entitlements, `build/Wino.iOS.*`): read the [iOS guide](docs/harness/development-ios.md).
 - **Android change** (Android head, `Wino.Platform.Android`, `controls/*.Android`, `AndroidManifest.xml`, Android resources and layouts, `build/Wino.Android.*`): read the [Android guide](docs/harness/development-android.md).
+- **Linux change** (WinoLux fork: Linux head, `Wino.Platform.Linux`, `controls/*.Gtk`, `build/Wino.Linux.*`, Linux packaging): read the [Linux guide](docs/harness/development-linux.md) and the [Linux design decisions](docs/linux-design-decisions.md).
 - **Apple shared change** (`Wino.Platform.Apple`, `Wino.Core.Apple.Bindings`, `Wino.Editor.WebKit`): it affects the macOS and iOS applications. Read both Apple guides.
 - **Shared change** (shared projects above, translations, `Directory.Build.*`, `Directory.Packages.props`, `global.json`): it affects all four applications. Read every guide's verification section, and keep shared code free of platform UI references.
 
@@ -83,6 +85,7 @@ Read only references that apply to the task:
 | New macOS UI feature or visual pattern | [macOS design decisions](docs/macos-design-decisions.md), then the [Wino design guideline](docs/wino-design-guideline.md) for shared naming and order |
 | New iOS or iPadOS UI feature or visual pattern | [iOS design decisions](docs/ios-design-decisions.md), then the [macOS design decisions](docs/macos-design-decisions.md) and the [Wino design guideline](docs/wino-design-guideline.md) |
 | New Android UI feature or visual pattern | [Android design decisions](docs/android-design-decisions.md), then the [iOS design decisions](docs/ios-design-decisions.md) and the [Wino design guideline](docs/wino-design-guideline.md) |
+| New Linux UI feature or visual pattern | [Linux design decisions](docs/linux-design-decisions.md), then the [macOS design decisions](docs/macos-design-decisions.md) and the [Wino design guideline](docs/wino-design-guideline.md) |
 | Moving duplicated Mac or iOS logic into shared code | [macOS shared-logic roadmap](docs/macos-shared-logic-roadmap.md) |
 | Reusable controls or playground | [controls/AGENTS.md](controls/AGENTS.md) |
 | Icons, icon fonts, or the colorful icon style | [icons/README.md](icons/README.md) and the Icons section of the [implementation rules](docs/harness/implementation-rules.md) |

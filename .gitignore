@@ -423,6 +423,7 @@ docs/design-prototypes/*
 !/docs/harness/development-macos.md
 !/docs/harness/development-ios.md
 !/docs/harness/development-android.md
+!/docs/harness/development-linux.md
 !/docs/releases-windows.md
 !/docs/releases-macos.md
 !/docs/releases-android.md
@@ -430,6 +431,7 @@ docs/design-prototypes/*
 !/docs/ios-design-decisions.md
 !/docs/android-design-decisions.md
 !/docs/android-port-investigation.md
+!/docs/linux-design-decisions.md
 !/docs/macos-shared-logic-roadmap.md
 !/docs/push-relay-design.md
 !/docs/push-relay/
