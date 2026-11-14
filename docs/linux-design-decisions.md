@@ -28,11 +28,11 @@ The fork only adds. Linux code lives in new projects and documents; upstream fil
 | Size classes | Wino's breakpoints in app-window pixels, through `AdwBreakpoint`. Large (1008 px and wider): sidebar, list, and reader side by side. Medium (641 to 1007 px): the sidebar becomes an overlay (`AdwOverlaySplitView` collapsed); list and reader stay side by side. Small (640 px and narrower): list and reader become a drill-in (`AdwNavigationSplitView` collapsed). |
 | Modes | Mail, Calendar, Contacts, and To Do, plus Settings as the fifth segment, as on Windows and macOS. |
 | Look | Stock libadwaita: system light or dark with a Light/Dark override, system accent colour, system font (Adwaita Sans on GNOME, Ubuntu Sans on Ubuntu), libadwaita type classes and radii. Without a backdrop theme, panes run edge to edge with GNOME's pane separators (macOS Revision 3). A Wino theme sets the accent and an optional wallpaper or gradient behind list and reader; then panes sit in rounded Wino zones with gutters (macOS Revision 2). No Mica or Acrylic: GNOME offers no wallpaper-tinted or blurred window material. |
-| Icons | Every Wino concept glyph comes from the WinoIcons fonts. GTK stock symbolic icons only for window chrome: the sidebar toggle, back, the main menu, close, and the search toggle. Which WinoIcons set the Linux head uses is open (L1). |
+| Icons | Every Wino concept glyph comes from the WinoIcons fonts. GTK stock symbolic icons only for window chrome: the sidebar toggle, back, the main menu, close, and the search toggle. The Linux head uses the Material Rounded set (L1). |
 | New mail | The Windows "New Mail" row at the top of the sidebar, plus Ctrl+N. In the small layout, a button in the list header bar. |
 | Commands | GNOME has no unified toolbar. Each pane has its own header bar inside an `AdwToolbarView`. Sidebar header: sync button with the folder title and subtitle, then the main menu. List header: search toggle, Focused/Other, filter, selection mode. Reader header: Reply, Reply all, Forward · Archive, Delete, Move · Flag, Mark read, then More, in the Windows command order. Daily briefing, What's New, and the Wino account sit at the end of the sidebar header when their capability is on. |
 | Sheets and dialogs | Prompts are `AdwAlertDialog` with consequence-led responses ("Delete permanently", destructive appearance). Forms are `AdwDialog` with the Windows field order. Move mail is a `GtkPopover` anchored to the Move button, with a filtered folder tree. Undo and short status are `AdwToast`s. |
-| Settings | Its own `AdwWindow` opened with Ctrl+, or the Settings segment: an `AdwNavigationSplitView` with the Windows groups and order in the sidebar (Home, Manage Accounts, Wino Account, Wino Intelligence; General: General, Notifications, Personalization, Privacy & security, Keyboard Shortcuts, Backup and restore, About; Mail: Preferences, Message List, Unread badges, Reader & Composer, Signature and Encryption, Email Templates, Storage; Calendar, People, To Do). Cards render as libadwaita rows (see [Settings rows](#settings-rows)). Pages hidden by capability stay out of the sidebar. |
+| Settings | Its own `AdwWindow` opened with Ctrl+, or the Settings segment: an `AdwNavigationSplitView` with the Windows groups and order in the sidebar (Home, Manage Accounts, Wino Account, Wino Intelligence; General: General, Notifications, Personalization, Privacy & security, Keyboard Shortcuts, Backup and restore, About; Mail: Preferences, Message List, Unread badges, Reader & Composer, Signature and Encryption, Email Templates, Storage; Calendar, People, To Do). Cards render as libadwaita rows (see [Settings rows](#settings-rows)). Pages hidden by capability stay out of the sidebar (L2). |
 | Keyboard | The shared keyboard-shortcut definitions, with Ctrl where Windows uses Ctrl and the Mac uses Cmd. GNOME conventions win on conflict: Ctrl+F searches, Ctrl+, opens Settings, Ctrl+? shows the shortcuts dialog (`AdwShortcutsDialog`), F10 opens the main menu. |
 | Storage | XDG directories: data in `$XDG_DATA_HOME/WinoLux`, configuration in `$XDG_CONFIG_HOME/WinoLux`, cache in `$XDG_CACHE_HOME/WinoLux`; the Flatpak sandbox maps them. |
 | Secrets | Every credential and token is protected by the shared AES-GCM envelope with a key held in the Secret Service (`org.freedesktop.secrets`: GNOME Keyring, KWallet, KeePassXC) through libsecret. No plaintext fallback: without a Secret Service, account setup stops with an info bar that names the missing service. |
@@ -106,16 +106,18 @@ Wino Account, Wino Intelligence cloud features, and the daily briefing rely on u
 
 S/MIME, the custom theme editor, Companion, push-triggered sync, the daily briefing, widgets, and Flathub publication.
 
-## Open for the owner's review
+## Owner decisions
 
-| # | Item | Recommendation |
+Decided by the fork owner on 14 November 2026.
+
+| # | Item | Decision |
 | --- | --- | --- |
-| L1 | WinoIcons set for Linux: reuse Material Rounded (Apache-2.0, already built for Android) or add a GNOME-style symbolic set | Material Rounded for the first pass: its outline style sits close to GNOME's symbolic icons and costs nothing. Revisit once the shell runs. |
-| L2 | Settings as its own window or as a mode inside the main window | Own window, as on macOS and in GNOME apps; the Settings segment opens it |
-| L3 | Outlook and Gmail sign-in registrations | Register WinoLux's own Microsoft Entra app and Google desktop client. The repository rules forbid repurposing upstream's clients, and a fork that ships builds must not use them |
-| L4 | Wino Account, intelligence cloud features, daily briefing | Hidden until the upstream owner agrees |
-| L5 | Native AOT for the GTK head | Try it in milestone 1; exempt the GTK projects only if Gir.Core requires it |
-| L6 | Release format | Flatpak first, then Flathub; a `.deb` only on demand |
+| L1 | WinoIcons set for Linux | Material Rounded (Apache-2.0, already built for Android) for the first pass. A GNOME-style symbolic set is reconsidered once the shell runs. |
+| L2 | Settings as its own window or a mode inside the main window | Its own window, as on macOS and in GNOME apps; the Settings segment and Ctrl+, open it. |
+| L3 | Outlook and Gmail sign-in registrations | WinoLux registers its own Microsoft Entra app and Google desktop client; upstream's clients are never used. Until they exist, onboarding offers IMAP and SMTP only. Steps in [Linux development](harness/development-linux.md#sign-in-registrations). |
+| L4 | Wino Account, intelligence cloud features, daily briefing | Hidden until the upstream owner agrees. |
+| L5 | Native AOT for the GTK head | Open until milestone 1 measures it. The shared libraries keep the gate either way; the GTK projects keep it if Gir.Core builds cleanly under it, and are exempted in `build/Wino.Linux.targets` otherwise. |
+| L6 | Release format | Flatpak first, then Flathub; a `.deb` only on demand. |
 
 ## Project map
 

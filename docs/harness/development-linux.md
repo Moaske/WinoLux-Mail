@@ -30,7 +30,7 @@ Every push to a branch of the fork runs the Linux workflow in GitHub Actions *(p
 
 Linux builds use `WinoTargetPlatform=Linux` *(planned, milestone 1)*. As for Windows and macOS, a Linux host selects it when the value is not passed; an explicit `-p:WinoTargetPlatform=...` wins. `Directory.Build.targets` imports `build/Wino.Linux.targets` when `WinoTargetPlatform` is `Linux`.
 
-The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. Whether the GTK projects keep it is open item L5 in the design decisions.
+The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. Whether the GTK projects keep it is decided in milestone 1 (L5 in the design decisions).
 
 ## Projects
 
@@ -75,12 +75,31 @@ macOS and iOS builds need Xcode and Apple signing. For shared changes they are r
 
 ## Sign-in registrations
 
-*(Planned.)* Outlook and Gmail need WinoLux's own registrations; the repository's hard rules forbid using upstream's OAuth clients for another purpose.
+*(Planned, needed from the Outlook and Gmail milestone.)* WinoLux uses its own OAuth registrations; the repository's hard rules forbid using upstream's clients for another purpose. Until they exist, onboarding offers IMAP and SMTP only (L3).
 
-- **Outlook:** a Microsoft Entra public-client app with the redirect `http://localhost` (MSAL's system-browser flow on Linux).
-- **Gmail:** a Google Cloud OAuth client of type "Desktop app", for the shared loopback flow.
+### Outlook: Microsoft Entra app
 
-Client IDs live in the Linux platform project's configuration, never in shared code. Until they exist, onboarding offers IMAP and SMTP only.
+1. Sign in at <https://entra.microsoft.com> with a Microsoft account, then **App registrations** → **New registration**.
+2. Name `WinoLux Mail`. Supported account types: **Accounts in any organizational directory and personal Microsoft accounts**.
+3. Redirect URI: platform **Public client/native (mobile & desktop)**, value `http://localhost`.
+4. Under **Authentication**, set **Allow public client flows** to **Yes**. No client secret is created.
+5. Under **API permissions**, add the delegated Microsoft Graph permissions the shared authenticator requests (`MailAuthenticatorConfiguration` in `Wino.Authentication`): `email`, `offline_access`, `User.Read`, `Mail.ReadWrite`, `Mail.Send`, `Mail.ReadWrite.Shared`, `Mail.Send.Shared`, `MailboxSettings.ReadWrite`, `Calendars.ReadWrite`, `Calendars.ReadWrite.Shared`, `Contacts.ReadWrite`, `Tasks.ReadWrite`.
+6. Copy the **Application (client) ID** from **Overview**.
+
+Personal Outlook.com accounts work with an unverified app. Work and school tenants may block unverified apps until an administrator consents or the app gets publisher verification.
+
+### Gmail: Google Cloud desktop client
+
+1. At <https://console.cloud.google.com>, create a project `WinoLux Mail`.
+2. Enable the **Gmail API**, **Google Calendar API**, **People API**, **Google Tasks API**, and **Google Drive API** (the authenticator requests `drive.file`).
+3. Under **Google Auth Platform**, configure the consent screen: audience **External**, publishing status **Testing**, and add your own Google address as a test user.
+4. Under **Clients**, create an OAuth client of type **Desktop app**, then copy the client ID. Google does not treat a desktop client's secret as confidential.
+
+Gmail's full-mailbox scope (`https://mail.google.com/`) is a restricted scope. In Testing mode only listed test users (up to 100) can sign in, and Google expires their sign-in after 7 days, so the account asks to sign in again weekly. Publishing for everyone requires Google's app verification and a yearly third-party security assessment. For personal use, Gmail also works through IMAP with an app password (needs 2-Step Verification on the Google account).
+
+### Where the IDs go
+
+Client IDs belong to the Linux platform project's configuration, never to shared code. They identify the app but are not secrets; CI builds read them from GitHub Actions repository variables, so forks of WinoLux can use their own registrations.
 
 ## Verification
 
