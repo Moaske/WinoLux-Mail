@@ -2,7 +2,7 @@
 
 This is the guide for the Linux application in `src/Wino.Mail.Linux` and its solution `WinoMail.Linux.slnx`, part of the WinoLux Mail fork.
 
-**Status (14 November 2026): milestone 1.** Linux is a build platform, CI builds and packages the head, and the head opens a toolchain window (an empty libadwaita window that loads the shared domain). Sections still marked *planned* describe later milestones.
+**Status (14 November 2026): milestone 2a.** Linux is a build platform, CI builds and packages the head, and the head starts the shared runtime through the Linux platform services: data under the XDG folders, the protection key in the Secret Service, the shared startup order. The window shows the startup target in a status page (Welcome without accounts); the three-pane shell follows in milestone 2b. Sections still marked *planned* describe later milestones.
 
 The app uses the shared .NET services, ViewModels, translations, and editor engine through explicit adapters over GTK 4 and libadwaita (Gir.Core bindings). It does not use Avalonia, Uno, MAUI, or Electron.
 
@@ -42,7 +42,7 @@ See the project map in [Linux design decisions](../linux-design-decisions.md#pro
 | Project | Status | Role |
 | --- | --- | --- |
 | `src/Wino.Mail.Linux` | Toolchain window | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
-| `src/Wino.Platform.Linux` | Planned | Platform services; no presentation references |
+| `src/Wino.Platform.Linux` | Startup services | Platform services; no presentation references |
 | `controls/Wino.Presentation.Gtk` | Planned | Units, WinoIcons, libadwaita CSS, zones, backdrops, bindings |
 | `controls/Wino.Mail.Controls.Gtk` | Planned | Wino-drawn rows and controls |
 | `controls/Wino.Editor.Gtk` | Planned | `WebKitWebView` reader and editor sessions over `Wino.Editor.Core` |
@@ -119,9 +119,23 @@ Client IDs belong to the Linux platform project's configuration, never to shared
 
 A passing build does not prove UI behavior. A UI check counts as done only when someone performed it on the reference machine; the pull request says who.
 
+## Where WinoLux keeps its files
+
+| What | Where |
+| --- | --- |
+| Database, logs (`Logs/`), pictures | `~/.local/share/WinoLux/data` |
+| Protected credentials and tokens | `~/.local/share/WinoLux/secure` |
+| Settings file | `~/.config/WinoLux` |
+| Temporary files | `~/.cache/WinoLux/temp` |
+| Protection key | The login keyring: Passwords and Keys (Seahorse) shows it as "WinoLux Mail protection key" |
+
+Starting over: quit WinoLux, delete the three `WinoLux` folders, then the keyring item. The secure items cannot be read without that key, so delete them together.
+
+Debug builds log at Debug level. Release builds, including the Native AOT build, log only fatal errors unless logging is turned on in Settings.
+
 ## Troubleshooting
 
 | Symptom | Cause |
 | --- | --- |
 | `DllNotFoundException` for `libadwaita-1.so.0` or `libwebkitgtk-6.0.so.4` | A run-time library is missing; install the packages under [Requirements](#requirements) |
-| Account setup stops with "No secret service" | No Secret Service is running (common on minimal or non-GNOME sessions); start GNOME Keyring or install another provider |
+| The window shows "The Secret Service is unavailable" at startup | No Secret Service is running (common on minimal or non-GNOME sessions); start GNOME Keyring or install another provider. Nothing is stored without it |

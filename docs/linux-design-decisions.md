@@ -35,7 +35,8 @@ The fork only adds. Linux code lives in new projects and documents; upstream fil
 | Settings | Its own `AdwWindow` opened with Ctrl+, or the Settings segment: an `AdwNavigationSplitView` with the Windows groups and order in the sidebar (Home, Manage Accounts, Wino Account, Wino Intelligence; General: General, Notifications, Personalization, Privacy & security, Keyboard Shortcuts, Backup and restore, About; Mail: Preferences, Message List, Unread badges, Reader & Composer, Signature and Encryption, Email Templates, Storage; Calendar, People, To Do). Cards render as libadwaita rows (see [Settings rows](#settings-rows)). Pages hidden by capability stay out of the sidebar (L2). |
 | Keyboard | The shared keyboard-shortcut definitions, with Ctrl where Windows uses Ctrl and the Mac uses Cmd. GNOME conventions win on conflict: Ctrl+F searches, Ctrl+, opens Settings, Ctrl+? shows the shortcuts dialog (`AdwShortcutsDialog`), F10 opens the main menu. |
 | Storage | XDG directories: data in `$XDG_DATA_HOME/WinoLux`, configuration in `$XDG_CONFIG_HOME/WinoLux`, cache in `$XDG_CACHE_HOME/WinoLux`; the Flatpak sandbox maps them. |
-| Secrets | Every credential and token is protected by the shared AES-GCM envelope with a key held in the Secret Service (`org.freedesktop.secrets`: GNOME Keyring, KWallet, KeePassXC) through libsecret. No plaintext fallback: without a Secret Service, account setup stops with an info bar that names the missing service. |
+| Secrets | Every credential and token is protected by the shared AES-GCM envelope with a key held in the Secret Service (`org.freedesktop.secrets`: GNOME Keyring, KWallet, KeePassXC) through libsecret, as one item with the attributes `application` and `purpose`. No plaintext fallback: without a Secret Service, startup stops and the window names the missing service. |
+| Crash reporting | Off. The shared configuration carries upstream's Sentry project; `LinuxApplicationConfiguration` returns an empty DSN, which disables the Sentry SDK, so WinoLux never reports to upstream. Local logs stay. |
 | Notifications | `GNotification` through `GApplication` (portal-aware), with the two configured shared mail actions and tap routing through `INotificationResponseService`. |
 | Attachments | Open through `GtkFileLauncher` and save through `GtkFileDialog`; both use the desktop portals. Magika classification stays on: ONNX Runtime ships `linux-x64`. |
 | Single instance | `GApplication` uniqueness on the session bus. A second launch activates the running window; `mailto:` links open compose in it. |
@@ -86,7 +87,7 @@ Header icons are WinoIcons glyphs as row prefixes. Descriptions become the row s
 
 ## Capabilities
 
-`PlatformCapabilities` for the Linux head, as first proposed:
+`PlatformCapabilities` for the Linux head once the first pass is complete. Each capability turns on with the milestone that implements it; milestone 2a turns on `PointerHover`, `MailListDensity` and `ConfigurableSyncIntervals`. Until desktop notifications exist, a silent notification builder announces nothing.
 
 | On | Off, with reason |
 | --- | --- |
