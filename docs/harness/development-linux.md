@@ -1,8 +1,8 @@
 # Linux development
 
-This is the guide for the planned Linux application in `src/Wino.Mail.Linux` and its solution `WinoMail.Linux.slnx`, part of the WinoLux Mail fork.
+This is the guide for the Linux application in `src/Wino.Mail.Linux` and its solution `WinoMail.Linux.slnx`, part of the WinoLux Mail fork.
 
-**Status (6 November 2026): planned.** None of the Linux projects exist yet. This guide records the commands and checks they will use, so each milestone lands against a known target. Sections are marked *planned* until the step that makes them true is merged.
+**Status (14 November 2026): milestone 1.** Linux is a build platform, CI builds and packages the head, and the head opens a toolchain window (an empty libadwaita window that loads the shared domain). Sections still marked *planned* describe later milestones.
 
 The app uses the shared .NET services, ViewModels, translations, and editor engine through explicit adapters over GTK 4 and libadwaita (Gir.Core bindings). It does not use Avalonia, Uno, MAUI, or Electron.
 
@@ -20,56 +20,63 @@ No `-dev` packages are needed: Gir.Core loads the libraries at run time.
 
 ## Try a build without a terminal
 
-Every push to a branch of the fork runs the Linux workflow in GitHub Actions *(planned, milestone 1)*:
+Every push to a branch of the fork runs the **Linux** workflow in GitHub Actions:
 
 1. Open the repository on GitHub, then **Actions**, then the latest **Linux** run.
-2. Under **Artifacts**, download `WinoLux-linux-x64`.
-3. Extract it in the Files app, right-click `WinoLux` → **Properties** → enable **Executable as Program**, then double-click it.
+2. Under **Artifacts**, download `WinoLux-linux-x64`. GitHub delivers it as a `.zip` that holds `WinoLux-linux-x64.tar.gz`; the archive keeps the program's executable permission.
+3. In the Files app, double-click the `.zip`, then the `.tar.gz`, and extract the `WinoLux` folder.
+4. Open the `WinoLux` folder, right-click an empty area → **Open in Terminal**, and type `./WinoLux`.
+
+The same run offers `WinoLux-linux-x64-aot`: the Native AOT build of the head (a single `WinoLux-aot/WinoLux` program). Start it the same way.
 
 ## Platform selection
 
-Linux builds use `WinoTargetPlatform=Linux` *(planned, milestone 1)*. As for Windows and macOS, a Linux host selects it when the value is not passed; an explicit `-p:WinoTargetPlatform=...` wins. `Directory.Build.targets` imports `build/Wino.Linux.targets` when `WinoTargetPlatform` is `Linux`.
+Linux builds use `WinoTargetPlatform=Linux`. As for Windows and macOS, a Linux host selects it when the value is not passed; an explicit `-p:WinoTargetPlatform=...` wins. `Directory.Build.targets` imports `build/Wino.Linux.targets` when `WinoTargetPlatform` is `Linux`.
 
-The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. Whether the GTK projects keep it is decided in milestone 1 (L5 in the design decisions).
+The shared Release gate (Native AOT, trimming, warnings as errors) applies unchanged to every shared library built for Linux. GTK projects set `WinoGtkProject`. They keep the gate too unless `WinoGtkAotExempt=true` is passed; whether they need that is L5 in the design decisions, measured by the AOT probe below.
 
 ## Projects
 
-*(Planned.)* See the project map in [Linux design decisions](../linux-design-decisions.md#project-map).
+See the project map in [Linux design decisions](../linux-design-decisions.md#project-map).
 
-| Project | Role |
-| --- | --- |
-| `src/Wino.Mail.Linux` | App head (`io.github.moaske.WinoLux`) |
-| `src/Wino.Platform.Linux` | Platform services; no presentation references |
-| `controls/Wino.Presentation.Gtk` | Units, WinoIcons, libadwaita CSS, zones, backdrops, bindings |
-| `controls/Wino.Mail.Controls.Gtk` | Wino-drawn rows and controls |
-| `controls/Wino.Editor.Gtk` | `WebKitWebView` reader and editor sessions over `Wino.Editor.Core` |
+| Project | Status | Role |
+| --- | --- | --- |
+| `src/Wino.Mail.Linux` | Toolchain window | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
+| `src/Wino.Platform.Linux` | Planned | Platform services; no presentation references |
+| `controls/Wino.Presentation.Gtk` | Planned | Units, WinoIcons, libadwaita CSS, zones, backdrops, bindings |
+| `controls/Wino.Mail.Controls.Gtk` | Planned | Wino-drawn rows and controls |
+| `controls/Wino.Editor.Gtk` | Planned | `WebKitWebView` reader and editor sessions over `Wino.Editor.Core` |
 
 ## Build and run
 
-*(Planned, milestone 2.)* From the repository root:
+From the repository root:
 
 ```sh
-dotnet build src/Wino.Mail.Linux/Wino.Mail.Linux.csproj
+dotnet build WinoMail.Linux.slnx
 dotnet run --project src/Wino.Mail.Linux/Wino.Mail.Linux.csproj
 ```
 
-Release archive, as the workflow builds it:
+The head publishes self-contained for `linux-x64` unless another `-r` is passed. Release archive and Native AOT build, as the workflow builds them:
 
 ```sh
-dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -o artifacts/linux-x64
+dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoGtkAotExempt=true -o artifacts/WinoLux
+dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoLinuxNativeAot=true -o aot
 ```
+
+Native AOT needs `clang` and `zlib1g-dev` (`sudo apt install clang zlib1g-dev`). `WinoLinuxNativeAot` sets `PublishAot` on the head only; a global `-p:PublishAot=true` also reaches the netstandard2.0 source generator and fails with NETSDK1207.
 
 GTK's inspector helps with layout checks: run with `GTK_DEBUG=interactive`, or press Ctrl+Shift+D in the running app after enabling it with `gsettings set org.gtk.gtk4.Settings.Debug enable-inspector-keybinding true`.
 
 ## Continuous integration
 
-*(Planned, milestone 1.)* `.github/workflows/linux.yml` runs on every push and pull request:
+Two workflows run in GitHub Actions:
 
-| Job | Runner | Checks |
-| --- | --- | --- |
-| Linux | `ubuntu-latest` | Debug build of the shared projects with `WinoTargetPlatform=Linux`, then of the Linux head; Release publish for `linux-x64`; uploads the `WinoLux-linux-x64` artifact |
-| Windows gate | `windows-latest` | For changes to shared code or build files: the Windows Debug x64 build and the Release x64 gate from `AGENTS.md` |
-| Android | `windows-latest` | For changes to shared code or build files: the Android Debug build |
+| Workflow | Job | Runner | When | Checks |
+| --- | --- | --- | --- | --- |
+| `linux.yml` | Build and package | `ubuntu-latest` | Every push | Debug build of `WinoMail.Linux.slnx`; Release gate for the shared projects (GTK projects exempt in this step); self-contained `linux-x64` publish; uploads `WinoLux-linux-x64` |
+| `linux.yml` | Native AOT probe | `ubuntu-latest` | Every push | Release build of the head with the full AOT gate, then a Native AOT publish; uploads `WinoLux-linux-x64-aot`; trim and AOT warnings in the run summary. Informational (L5) |
+| `shared-gate.yml` | Windows | `windows-latest` | Pull requests and `main` pushes that touch shared code or build files | Windows Debug x64 build and the Release x64 gate from `AGENTS.md` |
+| `shared-gate.yml` | Android | `windows-latest` | As above | Android Debug build, with the workload set pinned to 10.0.401.1 as the Android guide requires |
 
 macOS and iOS builds need Xcode and Apple signing. For shared changes they are reported as a handoff in the pull request, as `AGENTS.md` requires when no Mac is available.
 

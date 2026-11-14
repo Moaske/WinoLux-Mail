@@ -72,6 +72,20 @@ jobs:
           dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoLinuxNativeAot=true -p:TreatWarningsAsErrors=false -o aot 2>&1 | tee aot.log
           ls -la aot
 
+      - name: Pack the Native AOT build
+        if: steps.aot.outcome == 'success'
+        run: |
+          mkdir -p aot-package/WinoLux-aot
+          cp aot/WinoLux aot/*.so aot-package/WinoLux-aot/
+          tar -C aot-package -czf WinoLux-linux-x64-aot.tar.gz WinoLux-aot
+
+      - uses: actions/upload-artifact@v5
+        if: steps.aot.outcome == 'success'
+        with:
+          name: WinoLux-linux-x64-aot
+          path: WinoLux-linux-x64-aot.tar.gz
+          retention-days: 14
+
       - name: Summary
         if: always()
         run: |

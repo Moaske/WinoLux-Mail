@@ -8,7 +8,7 @@ Build, CI, and verification commands are in [Linux development](harness/developm
 
 ## Relation to upstream
 
-The fork only adds. Linux code lives in new projects and documents; upstream files change only where a new platform must be registered (`Directory.Build.props`, `Directory.Build.targets`, the platform tables in `AGENTS.md`, `docs/README.md`, `docs/harness/development.md`, and the tracked-document list in `.gitignore`). Every such change is listed in the pull request that makes it, so a later merge into `bkaankose/Wino-Mail` can take the Linux layer as it is. The repository's `AGENTS.md`, implementation rules, and verification scope apply unchanged.
+The fork only adds. Linux code lives in new projects and documents; upstream files change only where a new platform must be registered (`Directory.Build.props`, `Directory.Build.targets`, the Gir.Core entries in `Directory.Packages.props`, the platform tables in `AGENTS.md`, `docs/README.md`, `docs/harness/development.md`, and the tracked-document list in `.gitignore`). Every such change is listed in the pull request that makes it, so a later merge into `bkaankose/Wino-Mail` can take the Linux layer as it is. The repository's `AGENTS.md`, implementation rules, and verification scope apply unchanged.
 
 ## Principles
 
@@ -116,7 +116,7 @@ Decided by the fork owner on 14 November 2026.
 | L2 | Settings as its own window or a mode inside the main window | Its own window, as on macOS and in GNOME apps; the Settings segment and Ctrl+, open it. |
 | L3 | Outlook and Gmail sign-in registrations | WinoLux registers its own Microsoft Entra app and Google desktop client; upstream's clients are never used. Until they exist, onboarding offers IMAP and SMTP only. Steps in [Linux development](harness/development-linux.md#sign-in-registrations). |
 | L4 | Wino Account, intelligence cloud features, daily briefing | Hidden until the upstream owner agrees. |
-| L5 | Native AOT for the GTK head | Open until milestone 1 measures it. The shared libraries keep the gate either way; the GTK projects keep it if Gir.Core builds cleanly under it, and are exempted in `build/Wino.Linux.targets` otherwise. |
+| L5 | Native AOT for the GTK head | Open. Milestone 1 probe (14 November 2026): the head with Gir.Core 0.8.1 builds under the full AOT gate with 0 warnings and publishes as a 13 MB Native AOT program. Decided once both builds run on the reference machine. The shared libraries keep the gate either way; `WinoGtkAotExempt` in `build/Wino.Linux.targets` exempts only the GTK projects if needed. |
 | L6 | Release format | Flatpak first, then Flathub; a `.deb` only on demand. |
 
 ## Project map
