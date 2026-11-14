@@ -16,8 +16,8 @@ namespace Wino.Mail.Linux;
 
 /// <summary>
 /// The composition root, in the Android and iOS Composition order: platform bootstrap, shared and core services, the
-/// Linux platform, ViewModels, then the head's dispatcher, clipboard, theme and lifecycle. Navigation and dialogs
-/// arrive with the shell in milestone 2b.
+/// Linux platform, ViewModels, then the head's dispatcher, clipboard, dialogs, theme and lifecycle. Navigation arrives
+/// with the shell in milestone 2b.
 /// </summary>
 internal static class LinuxComposition
 {
@@ -45,6 +45,8 @@ internal static class LinuxComposition
         services.AddSingleton<IDispatcher>(dispatcher);
         services.AddSingleton<IClipboardService, LinuxClipboardService>();
         services.AddSingleton(window);
+        services.AddSingleton<IMailDialogService, LinuxDialogService>();
+        services.AddSingleton<IDialogServiceBase>(provider => provider.GetRequiredService<IMailDialogService>());
 
         // Wino themes; custom themes use the Windows file layout.
         services.AddSingleton(provider => new CustomThemeFileStore(provider.GetRequiredService<IApplicationConfiguration>()));

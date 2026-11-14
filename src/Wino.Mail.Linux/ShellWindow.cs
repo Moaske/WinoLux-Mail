@@ -12,6 +12,7 @@ public sealed class ShellWindow
     private const string ApplicationDisplayName = "WinoLux Mail";
     private readonly Adw.ApplicationWindow _window;
     private readonly Adw.StatusPage _status;
+    private readonly Adw.ToastOverlay _toasts;
 
     public ShellWindow(Adw.Application application)
     {
@@ -23,13 +24,22 @@ public sealed class ShellWindow
         toolbarView.AddTopBar(Adw.HeaderBar.New());
         toolbarView.Content = _status;
 
+        _toasts = Adw.ToastOverlay.New();
+        _toasts.Child = toolbarView;
+
         _window = Adw.ApplicationWindow.New(application);
         _window.Title = ApplicationDisplayName;
         _window.SetDefaultSize(1100, 720);
-        _window.Content = toolbarView;
+        _window.Content = _toasts;
     }
 
+    /// <summary>The window as the parent of dialogs.</summary>
+    public Gtk.Widget Widget => _window;
+
     public void Present() => _window.Present();
+
+    /// <summary>Shows a toast over the window's content. UI thread.</summary>
+    public void ShowToast(Adw.Toast toast) => _toasts.AddToast(toast);
 
     public void ShowStartup(ApplicationStartupTarget target)
     {
