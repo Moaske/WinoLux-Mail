@@ -86,6 +86,7 @@ public static class LinuxPlatformRegistration
         services.AddSingleton<IUserPresenceStateProvider, LinuxUserPresenceStateProvider>();
         services.AddSingleton<ITaskCompletionSound, LinuxTaskCompletionSound>();
         services.AddSingleton<IMicrosoftStoreService, LinuxMicrosoftStoreService>();
+        services.AddSingleton<INotificationBuilder, LinuxSilentNotificationBuilder>();
 
         // Each capability turns on with the milestone that implements it (Capabilities in the Linux design decisions).
         services.AddSingleton<IPlatformCapabilities>(new PlatformCapabilities(
