@@ -1,0 +1,102 @@
+name: Linux
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build and package (linux-x64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Debug build (shared projects and Linux head)
+        run: dotnet build WinoMail.Linux.slnx -c Debug
+
+      - name: Release gate (shared and GTK projects)
+        run: dotnet build WinoMail.Linux.slnx -c Release
+
+      - name: Publish linux-x64
+        run: dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -o artifacts/WinoLux
+
+      - name: Pack archive
+        run: tar -C artifacts -czf WinoLux-linux-x64.tar.gz WinoLux
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: WinoLux-linux-x64
+          path: WinoLux-linux-x64.tar.gz
+          retention-days: 14
+
+  aot:
+    name: Native AOT build (linux-x64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Install the Native AOT toolchain
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+      - name: Release build of the head with the full AOT gate
+        id: gate
+        run: |
+          set -o pipefail
+          dotnet build src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release 2>&1 | tee gate.log
+
+      - name: Native AOT publish
+        id: aot
+        if: always()
+        run: |
+          set -o pipefail
+          dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x64 -p:WinoLinuxNativeAot=true -p:TreatWarningsAsErrors=false -o aot 2>&1 | tee aot.log
+          ls -la aot
+
+      - name: Pack the Native AOT build
+        if: steps.aot.outcome == 'success'
+        run: |
+          mkdir -p aot-package/WinoLux-aot
+          cp aot/WinoLux aot/*.so aot-package/WinoLux-aot/
+          tar -C aot-package -czf WinoLux-linux-x64-aot.tar.gz WinoLux-aot
+
+      - uses: actions/upload-artifact@v5
+        if: steps.aot.outcome == 'success'
+        with:
+          name: WinoLux-linux-x64-aot
+          path: WinoLux-linux-x64-aot.tar.gz
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Native AOT build"
+            echo
+            echo "- AOT gate build: ${{ steps.gate.outcome }}"
+            echo "- Native AOT publish: ${{ steps.aot.outcome }}"
+            echo
+            echo "### Trim and AOT warnings (IL2xxx, IL3xxx)"
+            echo '```'
+            grep -hoE "warning IL[23][0-9]{3}[^[]*" gate.log aot.log 2>/dev/null | sort | uniq -c | sort -rn | head -40 || true
+            echo '```'
+            if [ -f aot/WinoLux ]; then echo "Native binary size: $(du -h aot/WinoLux | cut -f1)"; fi
+          } >> "$GITHUB_STEP_SUMMARY"

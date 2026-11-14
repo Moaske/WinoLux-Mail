@@ -1,0 +1,94 @@
+name: Shared gate
+
+# AGENTS.md requires, for shared production code, dependencies, or build configuration, the Windows Debug x64 build,
+# the Windows Release x64 gate, and the Android Debug build. macOS and iOS builds remain a handoff.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/Wino.Core.Domain/**"
+      - "src/Wino.Core/**"
+      - "src/Wino.Core.ML/**"
+      - "src/Wino.Services/**"
+      - "src/Wino.Authentication/**"
+      - "src/Wino.Messages/**"
+      - "src/Wino.Mail.ViewModels/**"
+      - "src/Wino.SourceGenerators/**"
+      - "controls/Wino.Presentation.Core/**"
+      - "controls/Wino.Mail.Controls.Core/**"
+      - "controls/Wino.Editor.Core/**"
+      - "build/**"
+      - "Directory.Build.*"
+      - "Directory.Packages.props"
+      - "global.json"
+      - "nuget.config"
+      - ".github/workflows/shared-gate.yml"
+  pull_request:
+    paths:
+      - "src/Wino.Core.Domain/**"
+      - "src/Wino.Core/**"
+      - "src/Wino.Core.ML/**"
+      - "src/Wino.Services/**"
+      - "src/Wino.Authentication/**"
+      - "src/Wino.Messages/**"
+      - "src/Wino.Mail.ViewModels/**"
+      - "src/Wino.SourceGenerators/**"
+      - "controls/Wino.Presentation.Core/**"
+      - "controls/Wino.Mail.Controls.Core/**"
+      - "controls/Wino.Editor.Core/**"
+      - "build/**"
+      - "Directory.Build.*"
+      - "Directory.Packages.props"
+      - "global.json"
+      - "nuget.config"
+      - ".github/workflows/shared-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows:
+    name: Windows Debug x64 and Release x64 gate
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Windows Debug x64
+        run: dotnet build src/Wino.Mail.WinUI/Wino.Mail.WinUI.csproj -c Debug -p:Platform=x64 -p:RuntimeIdentifier=win-x64
+
+      - name: Windows Release x64 gate
+        run: dotnet build src/Wino.Mail.WinUI/Wino.Mail.WinUI.csproj -c Release -p:Platform=x64 -p:RuntimeIdentifier=win-x64 -p:GenerateAppxPackageOnBuild=false
+
+  android:
+    name: Android Debug
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Install the android workload (workload set pinned as in the Android guide)
+        run: dotnet workload install android --version 10.0.401.1
+
+      - name: Android dependencies
+        shell: pwsh
+        run: dotnet build src/Wino.Mail.Android/Wino.Mail.Android.csproj -t:InstallAndroidDependencies -f net10.0-android -p:AndroidSdkDirectory="$env:ANDROID_HOME" -p:JavaSdkDirectory="$env:JAVA_HOME_17_X64" -p:AcceptAndroidSDKLicenses=True -p:WinoTargetPlatform=Android
+
+      - name: Android Debug build
+        shell: pwsh
+        run: dotnet build WinoMail.Android.slnx -c Debug -p:WinoTargetPlatform=Android -p:AndroidSdkDirectory="$env:ANDROID_HOME" -p:JavaSdkDirectory="$env:JAVA_HOME_17_X64"

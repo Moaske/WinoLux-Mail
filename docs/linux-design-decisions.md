@@ -8,7 +8,7 @@ Build, CI, and verification commands are in [Linux development](harness/developm
 
 ## Relation to upstream
 
-The fork only adds. Linux code lives in new projects and documents; upstream files change only where a new platform must be registered (`Directory.Build.props`, `Directory.Build.targets`, the platform tables in `AGENTS.md`, `docs/README.md`, `docs/harness/development.md`, and the tracked-document list in `.gitignore`). Every such change is listed in the pull request that makes it, so a later merge into `bkaankose/Wino-Mail` can take the Linux layer as it is. The repository's `AGENTS.md`, implementation rules, and verification scope apply unchanged.
+The fork only adds. Linux code lives in new projects and documents; upstream files change only where a new platform must be registered (`Directory.Build.props`, `Directory.Build.targets`, the Gir.Core entries in `Directory.Packages.props`, the platform tables in `AGENTS.md`, `docs/README.md`, `docs/harness/development.md`, and the tracked-document list in `.gitignore`). Every such change is listed in the pull request that makes it, so a later merge into `bkaankose/Wino-Mail` can take the Linux layer as it is. The repository's `AGENTS.md`, implementation rules, and verification scope apply unchanged.
 
 ## Principles
 
@@ -24,7 +24,7 @@ The fork only adds. Linux code lives in new projects and documents; upstream fil
 | Name and identity | Display name WinoLux Mail. Application ID `io.github.moaske.WinoLux` (D-Bus name, `.desktop` file, GSettings schema, icon names, Flatpak ID). It must not change after the first public release. Upstream branding replaces it only on a merge. |
 | Baseline | Ubuntu 26.04 LTS (GNOME 50) on x64. GTK 4 and libadwaita from the GNOME 50 platform; WebKitGTK 6.0 (`webkitgtk-6.0`). `linux-arm64` follows once x64 is stable. |
 | Bindings | `GirCore.Gtk-4.0`, `GirCore.Adw-1`, and `GirCore.WebKit-6.0` (0.8.x), centrally versioned in `Directory.Packages.props`. Gir.Core loads the system libraries at run time; builds need no `-dev` packages. |
-| Runtime | CoreCLR, `net10.0`. The shared Release gate (Native AOT, trimming, warnings as errors) stays on for every shared library. The head tries to keep it too (instant startup, as on Windows); if Gir.Core blocks it, `build/Wino.Linux.targets` exempts only the GTK projects, as the Apple and Android heads are exempt. See L5. |
+| Runtime | CoreCLR, `net10.0`. The shared Release gate (Native AOT, trimming, warnings as errors) stays on for every shared library. The GTK projects keep it too, and release builds of the head use Native AOT, as on Windows (L5). If a later Gir.Core feature cannot pass, `WinoGtkAotExempt` in `build/Wino.Linux.targets` exempts only the GTK projects, as the Apple and Android heads are exempt. |
 | Size classes | Wino's breakpoints in app-window pixels, through `AdwBreakpoint`. Large (1008 px and wider): sidebar, list, and reader side by side. Medium (641 to 1007 px): the sidebar becomes an overlay (`AdwOverlaySplitView` collapsed); list and reader stay side by side. Small (640 px and narrower): list and reader become a drill-in (`AdwNavigationSplitView` collapsed). |
 | Modes | Mail, Calendar, Contacts, and To Do, plus Settings as the fifth segment, as on Windows and macOS. |
 | Look | Stock libadwaita: system light or dark with a Light/Dark override, system accent colour, system font (Adwaita Sans on GNOME, Ubuntu Sans on Ubuntu), libadwaita type classes and radii. Without a backdrop theme, panes run edge to edge with GNOME's pane separators (macOS Revision 3). A Wino theme sets the accent and an optional wallpaper or gradient behind list and reader; then panes sit in rounded Wino zones with gutters (macOS Revision 2). No Mica or Acrylic: GNOME offers no wallpaper-tinted or blurred window material. |
@@ -116,7 +116,7 @@ Decided by the fork owner on 14 November 2026.
 | L2 | Settings as its own window or a mode inside the main window | Its own window, as on macOS and in GNOME apps; the Settings segment and Ctrl+, open it. |
 | L3 | Outlook and Gmail sign-in registrations | WinoLux registers its own Microsoft Entra app and Google desktop client; upstream's clients are never used. Until they exist, onboarding offers IMAP and SMTP only. Steps in [Linux development](harness/development-linux.md#sign-in-registrations). |
 | L4 | Wino Account, intelligence cloud features, daily briefing | Hidden until the upstream owner agrees. |
-| L5 | Native AOT for the GTK head | Open until milestone 1 measures it. The shared libraries keep the gate either way; the GTK projects keep it if Gir.Core builds cleanly under it, and are exempted in `build/Wino.Linux.targets` otherwise. |
+| L5 | Native AOT for the GTK head | The GTK projects keep the full Native AOT gate, and release builds of the head use Native AOT. Evidence (14 November 2026): with Gir.Core 0.8.1 the head builds under the gate with 0 warnings, publishes as a 13 MB Native AOT program, and both the regular and the Native AOT builds open on the reference machine. CI enforces the gate on every push. `WinoGtkAotExempt` stays available in `build/Wino.Linux.targets` for a later Gir.Core feature that cannot pass. |
 | L6 | Release format | Flatpak first, then Flathub; a `.deb` only on demand. |
 
 ## Project map
