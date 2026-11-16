@@ -95,19 +95,19 @@ jobs:
             cmd imap-state
             shot onb-3-imap
             cmd focus imap-password && xdotool type --delay 50 "1"
-            cmd imap-incoming 127.0.0.1 3143 0 0
-            cmd imap-outgoing 127.0.0.1 3025 0 0
-            cmd imap-state
-            shot onb-4-imap-filled
+            shot onb-4-signin
             WAIT=120 cmd imap-continue
+            cmd imap-incoming 127.0.0.1 3143 3 2
+            cmd imap-outgoing 127.0.0.1 3025 3 1
             cmd imap-state
-            shot onb-5-after-continue
-            sleep 20; cmd page; cmd setup-state
-            shot onb-6-done
-            sleep 10; cmd page; shot onb-7-shell
+            shot onb-5-servers
+            WAIT=180 cmd imap-continue
+            for i in 1 2 3 4 5 6; do cmd page; cmd setup-state; cmd imap-state; sleep 5; done
+            shot onb-6-after-add
+            sleep 15; cmd page; shot onb-7-shell
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
-            echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
+            echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in onb-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
