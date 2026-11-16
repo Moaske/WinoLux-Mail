@@ -33,7 +33,7 @@ public sealed class ShellPlaceholderPage(IServiceProvider services) : ILinuxPage
         var accounts = await services.GetRequiredService<IAccountService>().GetAccountsAsync();
         var lines = string.Join("\n", accounts.Select(account => string.IsNullOrWhiteSpace(account.Address) ? account.Name : $"{account.Name} · {account.Address}"));
         await services.GetRequiredService<IDispatcher>().ExecuteOnUIThread(() =>
-            _status.Description = string.IsNullOrEmpty(lines) ? Translator.NoMailSelected : lines);
+            _status.Description = string.IsNullOrEmpty(lines) ? Translator.NoMailSelected : GLib.Functions.MarkupEscapeText(lines, -1));
     }
 
     public Task ReleaseAsync() => Task.CompletedTask;

@@ -62,6 +62,7 @@ public sealed class AccountSetupProgressPage(AccountSetupProgressPageViewModel v
     private Gtk.Widget StepRow(AccountSetupStepModel step)
     {
         var row = Adw.ActionRow.New();
+        row.UseMarkup = false;
         row.Title = step.Title ?? string.Empty;
         var stepForm = new GtkForm<AccountSetupStepModel>(step, Bindings, Dispatcher, ReportError);
         var spinner = Adw.Spinner.New();

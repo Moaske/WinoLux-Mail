@@ -31,7 +31,7 @@ public sealed class WelcomePage(WelcomePageV2ViewModel viewModel, IDispatcher di
         var page = Adw.StatusPage.New();
         page.IconName = "mail-unread-symbolic";
         page.Title = Translator.WelcomeWindow_SetupTitle;
-        page.Description = Translator.WelcomeWindow_SetupSubtitle;
+        page.Description = GLib.Functions.MarkupEscapeText(Translator.WelcomeWindow_SetupSubtitle, -1);
         page.Child = GtkUi.Column(12, start, status);
         page.Vexpand = true;
         return page;

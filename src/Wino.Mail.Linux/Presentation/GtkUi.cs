@@ -37,6 +37,7 @@ public static class GtkUi
     public static Adw.ActionRow FieldRow(string title, Gtk.Widget suffix, string? subtitle = null)
     {
         var row = Adw.ActionRow.New();
+        row.UseMarkup = false;
         row.Title = title;
         if (!string.IsNullOrEmpty(subtitle)) row.Subtitle = subtitle;
         row.AddSuffix(suffix);

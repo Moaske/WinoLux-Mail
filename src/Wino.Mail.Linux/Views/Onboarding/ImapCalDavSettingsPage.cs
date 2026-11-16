@@ -184,6 +184,7 @@ public sealed class ImapCalDavSettingsPage(ImapCalDavSettingsPageViewModel viewM
     private Adw.ExpanderRow Expander(string title, string expandedProperty, Func<ImapCalDavSettingsPageViewModel, bool> read, Action<ImapCalDavSettingsPageViewModel, bool> write)
     {
         var expander = Adw.ExpanderRow.New();
+        expander.UseMarkup = false;
         expander.Title = title;
         var binding = Form.Bind(expandedProperty, read, expanded => { if (expander.Expanded != expanded) expander.Expanded = expanded; }, write);
         void Changed(GObject.Object sender, GObject.Object.NotifySignalArgs args)
@@ -319,6 +320,7 @@ public sealed class ImapCalDavSettingsPage(ImapCalDavSettingsPageViewModel viewM
     {
         var vm = ViewModel;
         var expander = Adw.ExpanderRow.New();
+        expander.UseMarkup = false;
         expander.Title = Translator.ImapSetup_AdvancedTitle;
         expander.Subtitle = Translator.ImapSetup_AdvancedDescription;
         Form.Visible(expander, nameof(vm.IsMailAdvancedOptionsVisible), s => s.IsMailAdvancedOptionsVisible);

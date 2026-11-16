@@ -46,7 +46,7 @@ public sealed class ShellWindow
     {
         _status.IconName = "dialog-error-symbolic";
         _status.Title = ApplicationDisplayName;
-        _status.Description = error.Message;
+        _status.Description = GLib.Functions.MarkupEscapeText(error.Message, -1);
         _content.Content = _status;
     }
 }

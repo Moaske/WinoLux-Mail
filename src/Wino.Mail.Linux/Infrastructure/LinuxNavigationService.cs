@@ -23,6 +23,9 @@ public sealed class LinuxNavigationService : INavigationService, INavigationHost
     private ILinuxPage? _current;
     private ShellPlaceholderPage? _shell;
 
+    /// <summary>The page in the window, by type name (the debug bridge reports it).</summary>
+    internal string? CurrentPageName => _current?.GetType().Name;
+
     public LinuxNavigationService(IServiceProvider services, IDispatcher dispatcher, ShellWindow window, LinuxPageRegistry registry)
     {
         _services = services;

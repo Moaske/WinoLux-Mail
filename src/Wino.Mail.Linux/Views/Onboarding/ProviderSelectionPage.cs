@@ -54,6 +54,7 @@ public sealed class ProviderSelectionPage(ProviderSelectionPageViewModel viewMod
         featured.Description = Translator.ProviderSelection_ProviderSectionDescription;
         featured.Add(_featured);
         var more = Adw.ActionRow.New();
+        more.UseMarkup = false;
         more.Title = Translator.ProviderSelection_MoreProviders_Title;
         more.Subtitle = Translator.ProviderSelection_MoreProviders_Description;
         more.Activatable = true;
@@ -105,6 +106,7 @@ public sealed class ProviderSelectionPage(ProviderSelectionPageViewModel viewMod
         foreach (var provider in (providers ?? []).Where(static provider => provider.Type is not (MailProviderType.Outlook or MailProviderType.Gmail)))
         {
             var row = Adw.ActionRow.New();
+            row.UseMarkup = false;
             row.Title = provider.Name;
             if (!string.IsNullOrWhiteSpace(provider.Description)) row.Subtitle = provider.Description;
             row.Activatable = true;
@@ -146,6 +148,7 @@ public sealed class ProviderSelectionPage(ProviderSelectionPageViewModel viewMod
     {
         var vm = ViewModel;
         var row = Adw.ActionRow.New();
+        row.UseMarkup = false;
         var logo = Gtk.Image.New();
         logo.PixelSize = 32;
         row.AddPrefix(logo);

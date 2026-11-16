@@ -9,7 +9,7 @@ namespace Wino.Mail.Linux.Infrastructure;
 /// Debug-only bridge for development without screen access (the Mac MacDebugBridge's twin). It polls
 /// <c>$XDG_CACHE_HOME/WinoLux/debug/cmd</c>; each line is one command, results are appended to <c>out.log</c> in the
 /// same folder. Like the Mac bridge it only selects, navigates and focuses: no command ever fills a credential.
-/// Built-in commands: <c>page WinoPage</c>, <c>focus NAME</c>, <c>commands</c>. Pages add their own with <see cref="Register"/>.
+/// Built-in commands: <c>page [WinoPage]</c> (without a page: the current one), <c>focus NAME</c>, <c>commands</c>. Pages add their own with <see cref="Register"/>.
 /// </summary>
 public static class LinuxDebugBridge
 {
@@ -29,8 +29,8 @@ public static class LinuxDebugBridge
         Directory.CreateDirectory(folder);
         var commandFile = Path.Combine(folder, "cmd");
         var output = Path.Combine(folder, "out.log");
-        Register("page", args => Task.FromResult(args.Length > 0 && Enum.TryParse<WinoPage>(args[0], true, out var page)
-            ? navigation.Navigate(page) ? "ok" : "not navigated" : "usage: page WinoPage"));
+        Register("page", args => Task.FromResult(args.Length == 0 ? navigation.CurrentPageName ?? "none" : Enum.TryParse<WinoPage>(args[0], true, out var page)
+            ? navigation.Navigate(page) ? "ok" : "not navigated" : "usage: page [WinoPage]"));
         Register("commands", _ => Task.FromResult(string.Join(' ', Commands.Keys.Order())));
         Register("focus", async args =>
         {

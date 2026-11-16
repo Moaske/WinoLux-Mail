@@ -20,6 +20,8 @@ public static class CapabilityPicker
         var group = Adw.PreferencesGroup.New();
 
         var mail = Adw.ExpanderRow.New();
+
+        mail.UseMarkup = false;
         mail.Title = Translator.ProviderSelection_UseForMail;
         mail.Subtitle = selection.MailDescription;
         mail.ShowEnableSwitch = true;
@@ -55,6 +57,7 @@ public static class CapabilityPicker
         string availableProperty, Func<AccountCapabilitySelection, bool> available, Func<AccountCapabilitySelection, string> providerText)
     {
         var row = Adw.ActionRow.New();
+        row.UseMarkup = false;
         row.Title = title;
         row.Subtitle = description;
         Gtk.DropDown? current = null;
