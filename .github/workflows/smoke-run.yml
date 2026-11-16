@@ -15,7 +15,7 @@ jobs:
       greenmail:
         image: greenmail/standalone:2.1.8
         env:
-          GREENMAIL_OPTS: -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.users=dave:1@greenmail.test -Dgreenmail.users.login=email
+          GREENMAIL_OPTS: -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.users=dave:Smoke-Pw-4711x@greenmail.test -Dgreenmail.users.login=email
         ports: ["3143:3143", "3025:3025"]
     steps:
       - uses: actions/checkout@v5
@@ -94,7 +94,7 @@ jobs:
             cmd imap-identity Dave Lab dave@greenmail.test
             cmd imap-state
             shot onb-3-imap
-            cmd focus imap-password && xdotool type --delay 50 "1"
+            cmd focus imap-password && xdotool type --delay 50 "Smoke-Pw-4711x"
             shot onb-4-signin
             WAIT=120 cmd imap-continue
             cmd imap-incoming 127.0.0.1 3143 3 2
@@ -106,6 +106,9 @@ jobs:
             shot onb-6-after-add
             sleep 15; cmd page; shot onb-7-shell
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
+            echo "--- security: files containing the password (expect none)"; grep -rlaF "Smoke-Pw-4711x" "$HOME/.local/share/WinoLux" "$HOME/.config/WinoLux" "$HOME/.cache/WinoLux" || echo "none"
+            echo "--- security: password references in the database"; grep -aoE "wino-keychain:v1:[A-Za-z0-9:_-]{0,40}" "$HOME"/.local/share/WinoLux/data/Wino*.db | sort -u | head
+            echo "--- security: modes"; stat -c "%a %n" "$HOME/.local/share/WinoLux" "$HOME/.local/share/WinoLux/data" "$HOME/.local/share/WinoLux/secure" "$HOME/.config/WinoLux" "$HOME/.cache/WinoLux"; ls -la "$HOME/.local/share/WinoLux/secure" | head
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in onb-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
