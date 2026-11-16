@@ -79,14 +79,18 @@ jobs:
             cmd welcome-start; sleep 2
             cmd provider-state
             cmd provider IMAP4
+            cmd provider-continue
             cmd provider-name Smoke Lab
+            shot onb-2-identity
+            cmd provider-continue
             cmd provider-capability calendar off
             cmd provider-capability contacts off
             cmd provider-capability tasks off
             cmd provider-state
-            shot onb-2-provider
+            shot onb-2b-capabilities
             cmd provider-continue; sleep 2
-            cmd page; cmd imap-state
+            cmd page
+            cmd imap-state
             cmd imap-identity Dave Lab dave@greenmail.test
             cmd imap-state
             shot onb-3-imap
@@ -98,11 +102,11 @@ jobs:
             WAIT=120 cmd imap-continue
             cmd imap-state
             shot onb-5-after-continue
-            sleep 20; cmd setup-state
+            sleep 20; cmd page; cmd setup-state
             shot onb-6-done
-            sleep 10; shot onb-7-shell
+            sleep 10; cmd page; shot onb-7-shell
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
-            echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out
+            echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in onb-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
