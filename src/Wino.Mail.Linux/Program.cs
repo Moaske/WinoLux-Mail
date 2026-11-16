@@ -87,6 +87,9 @@ public static class Program
             _dispatcher = new LinuxDispatcher(SynchronizationContext.Current
                 ?? throw new InvalidOperationException("The GLib synchronization context is not installed."));
             _services = LinuxComposition.Create(bootstrap, _dispatcher, window);
+#if DEBUG
+            LinuxDebugBridge.Start(Path.GetDirectoryName(bootstrap.Paths.TemporaryRoot) ?? bootstrap.Paths.TemporaryRoot, _dispatcher, _services.GetRequiredService<LinuxNavigationService>());
+#endif
         }
         catch (Exception error) when (error is PlatformNotSupportedException or System.Security.Cryptography.CryptographicException or IOException or UnauthorizedAccessException)
         {

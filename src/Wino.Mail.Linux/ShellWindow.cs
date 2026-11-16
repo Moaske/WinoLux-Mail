@@ -1,11 +1,8 @@
-using Wino.Core.Domain;
-using Wino.Mail.ViewModels.Lifecycle;
-
 namespace Wino.Mail.Linux;
 
 /// <summary>
-/// The main window. Milestone 2a shows the startup state in a status page: starting, the Welcome or shell target the
-/// shared startup order chose, or why startup failed. The three-pane shell replaces the status page in milestone 2b.
+/// The main window: a header bar over one routed page at a time (onboarding pages, or the shell), with toasts on top.
+/// Before the first page it shows a status page: starting, or why startup failed.
 /// </summary>
 public sealed class ShellWindow
 {
@@ -13,6 +10,7 @@ public sealed class ShellWindow
     private readonly Adw.ApplicationWindow _window;
     private readonly Adw.StatusPage _status;
     private readonly Adw.ToastOverlay _toasts;
+    private readonly Adw.ToolbarView _content;
 
     public ShellWindow(Adw.Application application)
     {
@@ -20,12 +18,12 @@ public sealed class ShellWindow
         _status.IconName = "mail-unread-symbolic";
         _status.Title = ApplicationDisplayName;
 
-        var toolbarView = Adw.ToolbarView.New();
-        toolbarView.AddTopBar(Adw.HeaderBar.New());
-        toolbarView.Content = _status;
+        _content = Adw.ToolbarView.New();
+        _content.AddTopBar(Adw.HeaderBar.New());
+        _content.Content = _status;
 
         _toasts = Adw.ToastOverlay.New();
-        _toasts.Child = toolbarView;
+        _toasts.Child = _content;
 
         _window = Adw.ApplicationWindow.New(application);
         _window.Title = ApplicationDisplayName;
@@ -41,24 +39,14 @@ public sealed class ShellWindow
     /// <summary>Shows a toast over the window's content. UI thread.</summary>
     public void ShowToast(Adw.Toast toast) => _toasts.AddToast(toast);
 
-    public void ShowStartup(ApplicationStartupTarget target)
-    {
-        if (target == ApplicationStartupTarget.Welcome)
-        {
-            _status.Title = Translator.WelcomeWindow_SetupTitle;
-            _status.Description = Translator.WelcomeWindow_SetupSubtitle;
-        }
-        else
-        {
-            _status.Title = ApplicationDisplayName;
-            _status.Description = Translator.NoMailSelected;
-        }
-    }
+    /// <summary>Makes <paramref name="page"/> the window content. UI thread.</summary>
+    public void ShowPage(Gtk.Widget page) => _content.Content = page;
 
     public void ShowStartupFailure(Exception error)
     {
         _status.IconName = "dialog-error-symbolic";
         _status.Title = ApplicationDisplayName;
-        _status.Description = error.Message;
+        _status.Description = GLib.Functions.MarkupEscapeText(error.Message, -1);
+        _content.Content = _status;
     }
 }

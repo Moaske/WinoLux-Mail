@@ -2,7 +2,7 @@
 
 This is the guide for the Linux application in `src/Wino.Mail.Linux` and its solution `WinoMail.Linux.slnx`, part of the WinoLux Mail fork.
 
-**Status (14 November 2026): milestone 2a.** Linux is a build platform, CI builds and packages the head, and the head starts the shared runtime through the Linux platform services: data under the XDG folders, the protection key in the Secret Service, the shared startup order. The window shows the startup target in a status page (Welcome without accounts); the three-pane shell follows in milestone 2b. Sections still marked *planned* describe later milestones.
+**Status (16 November 2026): milestone 2b.** Linux is a build platform; CI builds and packages the head, which starts the shared runtime through the Linux platform services (data under the XDG folders, the protection key in the Secret Service, the shared startup order). Without accounts the window opens onboarding: Welcome, the provider wizard (provider, account name and colour, what the account is used for), the IMAP sign-in and server pages, and setup progress. Outlook and Gmail stay hidden until WinoLux has its own sign-in registrations (L3). After setup a placeholder lists the accounts; the three-pane shell follows in milestone 2c and the mail list in 2d. Sections still marked *planned* describe later milestones.
 
 The app uses the shared .NET services, ViewModels, translations, and editor engine through explicit adapters over GTK 4 and libadwaita (Gir.Core bindings). It does not use Avalonia, Uno, MAUI, or Electron.
 
@@ -41,7 +41,7 @@ See the project map in [Linux design decisions](../linux-design-decisions.md#pro
 
 | Project | Status | Role |
 | --- | --- | --- |
-| `src/Wino.Mail.Linux` | Toolchain window | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
+| `src/Wino.Mail.Linux` | Onboarding (IMAP) | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
 | `src/Wino.Platform.Linux` | Startup services | Platform services; no presentation references |
 | `controls/Wino.Presentation.Gtk` | Planned | Units, WinoIcons, libadwaita CSS, zones, backdrops, bindings |
 | `controls/Wino.Mail.Controls.Gtk` | Planned | Wino-drawn rows and controls |
@@ -66,6 +66,24 @@ dotnet publish src/Wino.Mail.Linux/Wino.Mail.Linux.csproj -c Release -r linux-x6
 Native AOT needs `clang` and `zlib1g-dev` (`sudo apt install clang zlib1g-dev`). `WinoLinuxNativeAot` sets `PublishAot` on the head only; a global `-p:PublishAot=true` also reaches the netstandard2.0 source generator and fails with NETSDK1207.
 
 GTK's inspector helps with layout checks: run with `GTK_DEBUG=interactive`, or press Ctrl+Shift+D in the running app after enabling it with `gsettings set org.gtk.gtk4.Settings.Debug enable-inspector-keybinding true`.
+
+## Pages and the debug bridge
+
+Pages follow the Mac head: each routed page is a `LinuxPage<TViewModel>` (in `Infrastructure/LinuxPage.cs`) that builds its widgets once in `BuildView`, binds them to the shared ViewModel through the shared `Wino.Presentation.Bindings` (`GtkForm` adds the GTK widgets), and gets the shared navigation lifecycle from `LinuxNavigationService`. `LinuxPageRegistry` maps each `WinoPage` to a page; the composition root registers every page explicitly, so Native AOT keeps them.
+
+Debug builds start a file bridge, the Mac `MacDebugBridge`'s twin, for checks without screen access. Write one command per line to `~/.cache/WinoLux/debug/cmd`; each result is appended to `~/.cache/WinoLux/debug/out.log`.
+
+| Command | Does |
+| --- | --- |
+| `commands` | Lists the commands the current pages registered |
+| `page [WinoPage]` | Without a page: the page in the window. With one: navigates there |
+| `focus NAME` | Gives a registered field keyboard focus, so a test types into it like a person (`imap-password`) |
+| `welcome-start` | Starts setup from Welcome |
+| `provider NAME\|TYPE`, `provider-name NAME`, `provider-capability AREA MODE`, `provider-continue`, `provider-state` | Drive the provider wizard |
+| `imap-identity NAME ADDRESS`, `imap-incoming HOST PORT SECURITY AUTH`, `imap-outgoing ...`, `imap-continue`, `imap-state` | Drive the IMAP pages (security and authentication are drop-down positions; `imap-state` lists them) |
+| `setup-state` | Setup progress |
+
+The bridge only selects, navigates and focuses. No command fills a password: a test focuses the field and types, as a person would. Release builds do not contain the bridge.
 
 ## Continuous integration
 

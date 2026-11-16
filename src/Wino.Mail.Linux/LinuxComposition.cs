@@ -5,6 +5,7 @@ using Serilog;
 using Wino.Core;
 using Wino.Core.Domain.Interfaces;
 using Wino.Mail.Linux.Infrastructure;
+using Wino.Mail.Linux.Views.Onboarding;
 using Wino.Mail.ViewModels;
 using Wino.Mail.ViewModels.Lifecycle;
 using Wino.Platform.Linux;
@@ -16,8 +17,7 @@ namespace Wino.Mail.Linux;
 
 /// <summary>
 /// The composition root, in the Android and iOS Composition order: platform bootstrap, shared and core services, the
-/// Linux platform, ViewModels, then the head's dispatcher, clipboard, dialogs, theme and lifecycle. Navigation arrives
-/// with the shell in milestone 2b.
+/// Linux platform, ViewModels, then the head's dispatcher, clipboard, dialogs, theme, lifecycle, navigation and pages.
 /// </summary>
 internal static class LinuxComposition
 {
@@ -56,5 +56,16 @@ internal static class LinuxComposition
 
         services.AddSingleton<ApplicationLifecycleCoordinator>();
         services.AddSingleton<LinuxApplicationLifecycleHost>();
+
+        // Navigation and pages; each page resolves in a scope of its own (PageScopes).
+        var registry = new LinuxPageRegistry();
+        services.AddSingleton(registry);
+        services.AddSingleton<LinuxNavigationService>();
+        services.AddSingleton<INavigationService>(provider => provider.GetRequiredService<LinuxNavigationService>());
+        services.AddTransient<WelcomePage>();
+        services.AddTransient<ProviderSelectionPage>();
+        services.AddTransient<SpecialImapCredentialsPage>();
+        services.AddTransient<ImapCalDavSettingsPage>();
+        services.AddTransient<AccountSetupProgressPage>();
     }
 }
