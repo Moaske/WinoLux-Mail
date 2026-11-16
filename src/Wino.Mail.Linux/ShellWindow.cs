@@ -1,28 +1,64 @@
 using Wino.Core.Domain;
+using Wino.Mail.ViewModels.Lifecycle;
 
 namespace Wino.Mail.Linux;
 
-// Milestone 1 toolchain window: proves GTK 4, libadwaita, and the shared domain load together. The real shell
-// (sidebar, list, reader) replaces it in milestone 2.
-internal static class ShellWindow
+/// <summary>
+/// The main window. Milestone 2a shows the startup state in a status page: starting, the Welcome or shell target the
+/// shared startup order chose, or why startup failed. The three-pane shell replaces the status page in milestone 2b.
+/// </summary>
+public sealed class ShellWindow
 {
     private const string ApplicationDisplayName = "WinoLux Mail";
+    private readonly Adw.ApplicationWindow _window;
+    private readonly Adw.StatusPage _status;
+    private readonly Adw.ToastOverlay _toasts;
 
-    public static void Present(Adw.Application application)
+    public ShellWindow(Adw.Application application)
     {
-        var statusPage = Adw.StatusPage.New();
-        statusPage.IconName = "mail-unread-symbolic";
-        statusPage.Title = ApplicationDisplayName;
-        statusPage.Description = Translator.NoMailSelected;
+        _status = Adw.StatusPage.New();
+        _status.IconName = "mail-unread-symbolic";
+        _status.Title = ApplicationDisplayName;
 
         var toolbarView = Adw.ToolbarView.New();
         toolbarView.AddTopBar(Adw.HeaderBar.New());
-        toolbarView.Content = statusPage;
+        toolbarView.Content = _status;
 
-        var window = Adw.ApplicationWindow.New(application);
-        window.Title = ApplicationDisplayName;
-        window.SetDefaultSize(1100, 720);
-        window.Content = toolbarView;
-        window.Present();
+        _toasts = Adw.ToastOverlay.New();
+        _toasts.Child = toolbarView;
+
+        _window = Adw.ApplicationWindow.New(application);
+        _window.Title = ApplicationDisplayName;
+        _window.SetDefaultSize(1100, 720);
+        _window.Content = _toasts;
+    }
+
+    /// <summary>The window as the parent of dialogs.</summary>
+    public Gtk.Widget Widget => _window;
+
+    public void Present() => _window.Present();
+
+    /// <summary>Shows a toast over the window's content. UI thread.</summary>
+    public void ShowToast(Adw.Toast toast) => _toasts.AddToast(toast);
+
+    public void ShowStartup(ApplicationStartupTarget target)
+    {
+        if (target == ApplicationStartupTarget.Welcome)
+        {
+            _status.Title = Translator.WelcomeWindow_SetupTitle;
+            _status.Description = Translator.WelcomeWindow_SetupSubtitle;
+        }
+        else
+        {
+            _status.Title = ApplicationDisplayName;
+            _status.Description = Translator.NoMailSelected;
+        }
+    }
+
+    public void ShowStartupFailure(Exception error)
+    {
+        _status.IconName = "dialog-error-symbolic";
+        _status.Title = ApplicationDisplayName;
+        _status.Description = error.Message;
     }
 }

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Linux/">
     <Project Path="src/Wino.Mail.Linux/Wino.Mail.Linux.csproj" />
+    <Project Path="src/Wino.Platform.Linux/Wino.Platform.Linux.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="src/Wino.Core.Domain/Wino.Core.Domain.csproj" />
