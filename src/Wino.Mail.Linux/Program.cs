@@ -25,6 +25,7 @@ public static class Program
 
         var application = Adw.Application.New(ApplicationId, Gio.ApplicationFlags.DefaultFlags);
         application.OnActivate += (_, _) => Activate(application);
+        application.OnStartup += (_, _) => AddQuitAction(application);
 
         var exitCode = application.RunWithSynchronizationContext(null);
 
@@ -40,13 +41,32 @@ public static class Program
             {
                 Serilog.Log.Error(error, "Stopping the application failed.");
             }
+
+            // Shared services such as DraftUpdateCoordinator implement only IAsyncDisposable, so the container must be
+            // disposed asynchronously; a synchronous Dispose throws. No loop runs any more, so it runs on the pool.
+            try
+            {
+                Task.Run(() => services.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+            }
+            catch (Exception error)
+            {
+                Serilog.Log.Error(error, "Disposing the services failed.");
+            }
             finally
             {
                 Serilog.Log.CloseAndFlush();
-                services.Dispose();
             }
         }
         return exitCode;
+    }
+
+    /// <summary>The GNOME Quit action (Ctrl+Q): ends the main loop, after which the shared shutdown order runs.</summary>
+    private static void AddQuitAction(Adw.Application application)
+    {
+        var quit = Gio.SimpleAction.New("quit", null);
+        quit.OnActivate += (_, _) => application.Quit();
+        application.AddAction(quit);
+        application.SetAccelsForAction("app.quit", ["<Control>q"]);
     }
 
     private static void Activate(Adw.Application application)
