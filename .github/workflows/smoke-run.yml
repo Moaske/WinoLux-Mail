@@ -105,13 +105,29 @@ jobs:
             for i in 1 2 3 4 5 6; do cmd page; cmd setup-state; cmd imap-state; sleep 5; done
             shot onb-6-after-add
             sleep 15; cmd page; shot onb-7-shell
+            echo "--- shell checks"
+            cmd shell-state
+            shot sh-1-large
+            cmd folder Inbox; sleep 2; cmd shell-state
+            cmd mode Calendar; sleep 1; shot sh-2-mode-toast; cmd shell-state
+            W=$(xdotool search --name "WinoLux" | head -1); echo "window $W"
+            xdotool windowsize $W 900 700; sleep 3; cmd shell-state; shot sh-3-medium
+            cmd sidebar-toggle; sleep 2; shot sh-4-medium-overlay; cmd shell-state
+            cmd folder Sent; sleep 2; cmd shell-state
+            xdotool windowsize $W 560 700; sleep 3; cmd shell-state; shot sh-5-small
+            xdotool windowsize $W 1100 720; sleep 3; cmd shell-state
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- security: files containing the password (expect none)"; grep -rlaF "Smoke-Pw-4711x" "$HOME/.local/share/WinoLux" "$HOME/.config/WinoLux" "$HOME/.cache/WinoLux" || echo "none"
             echo "--- security: password references in the database"; grep -aoE "wino-keychain:v1:[A-Za-z0-9:_-]{0,40}" "$HOME"/.local/share/WinoLux/data/Wino*.db | sort -u | head
             echo "--- security: modes"; stat -c "%a %n" "$HOME/.local/share/WinoLux" "$HOME/.local/share/WinoLux/data" "$HOME/.local/share/WinoLux/secure" "$HOME/.config/WinoLux" "$HOME/.cache/WinoLux"; ls -la "$HOME/.local/share/WinoLux/secure" | head
+            echo "--- fifth launch (Debug, dark): the shell with the account"
+            ( ADW_DEBUG_COLOR_SCHEME=prefer-dark ./run/WinoLux > app5.out 2>&1; echo "exit code $?" >> app5.out ) &
+            sleep 20; cmd page; cmd shell-state; shot sh-6-dark
+            gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
+            echo "--- output 5"; cat app5.out
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
-            for f in onb-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
+            for f in onb-7-shell.png sh-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
