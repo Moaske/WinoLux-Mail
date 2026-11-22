@@ -52,13 +52,26 @@ public sealed class LinuxPaths
     /// <summary>True when no data or secure item exists yet: the only time a new protection key is created.</summary>
     public bool IsVerifiedNewInstallation => !Exists(ApplicationDataRoot) && !Exists(SecureItemsRoot);
 
+    /// <summary>
+    /// Creates the folders, owner-only. The default umask leaves new folders readable by every local user, and the
+    /// database holds the user's mail; the owner-only mode on each WinoLux root also covers everything inside it,
+    /// including folders an earlier version created.
+    /// </summary>
     public void CreateDirectories()
     {
-        Directory.CreateDirectory(ApplicationDataRoot);
-        Directory.CreateDirectory(SecureItemsRoot);
-        Directory.CreateDirectory(ConfigurationRoot);
-        Directory.CreateDirectory(TemporaryRoot);
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException("WinoLux paths are Linux folders.");
+        foreach (var root in new[] { Path.GetDirectoryName(ApplicationDataRoot), ConfigurationRoot, Path.GetDirectoryName(TemporaryRoot) })
+        {
+            if (string.IsNullOrEmpty(root)) continue;
+            Directory.CreateDirectory(root, OwnerOnly);
+            File.SetUnixFileMode(root, OwnerOnly);
+        }
+        Directory.CreateDirectory(ApplicationDataRoot, OwnerOnly);
+        Directory.CreateDirectory(SecureItemsRoot, OwnerOnly);
+        Directory.CreateDirectory(TemporaryRoot, OwnerOnly);
     }
+
+    private const UnixFileMode OwnerOnly = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
 
     // The XDG specification ignores relative values.
     private static string XdgFolder(string variable, string fallback)

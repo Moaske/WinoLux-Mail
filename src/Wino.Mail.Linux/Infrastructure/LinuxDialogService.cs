@@ -81,6 +81,7 @@ public sealed class LinuxDialogService(IDispatcher dispatcher, ShellWindow windo
             foreach (var (_, text, invalid) in items)
             {
                 var row = Adw.ActionRow.New();
+                row.UseMarkup = false;
                 row.Title = text;
                 if (invalid is not null) row.Subtitle = invalid;
                 row.Activatable = true;

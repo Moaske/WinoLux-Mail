@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Wino.Platform.Linux\Wino.Platform.Linux.csproj" />
     <ProjectReference Include="..\Wino.Core\Wino.Core.csproj" />
     <ProjectReference Include="..\Wino.Mail.ViewModels\Wino.Mail.ViewModels.csproj" />
+    <ProjectReference Include="..\..\controls\Wino.Presentation.Core\Wino.Presentation.Core.csproj" />
   </ItemGroup>
 
   <!-- Files the shared services read as packaged resources (LinuxPaths.PackagedResourceRoot, next to the program):
