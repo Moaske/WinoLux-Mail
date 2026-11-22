@@ -1,0 +1,50 @@
+name: API probe (temporary)
+on:
+  push:
+    branches: [smoke/linux-run]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: List Gir.Core members
+        run: |
+          mkdir -p "$RUNNER_TEMP/probe" && cd "$RUNNER_TEMP/probe"
+          cat > probe.csproj <<'XML'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><Nullable>disable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+            <ItemGroup><PackageReference Include="GirCore.Adw-1" Version="0.8.1" /></ItemGroup>
+          </Project>
+          XML
+          cat > Program.cs <<'CS'
+          using System.Reflection;
+          var wanted = new[] {
+            "Adw.ToggleGroup","Adw.Toggle","Adw.OverlaySplitView","Adw.NavigationSplitView","Adw.NavigationPage","Adw.NavigationView",
+            "Adw.Breakpoint","Adw.BreakpointCondition","Adw.ApplicationWindow","Adw.ToolbarView","Adw.HeaderBar","Adw.WindowTitle",
+            "Adw.ButtonContent","Adw.StatusPage","Adw.Spinner","Adw.Banner","Adw.Avatar",
+            "Gtk.ListView","Gtk.SignalListItemFactory","Gtk.ListItem","Gtk.SingleSelection","Gtk.NoSelection","Gtk.ListBox","Gtk.ListBoxRow",
+            "Gtk.CssProvider","Gtk.StyleContext","Gtk.Widget","Gtk.MenuButton","Gtk.PopoverMenu","Gtk.Revealer",
+            "Gio.ListStore","Gio.Menu","Gio.SimpleAction","Gdk.Display","Gtk.TreeExpander","Gtk.TreeListModel","Gtk.TreeListRow","Gtk.Label","Gtk.Image","Gtk.Button" };
+          var asms = AppDomain.CurrentDomain.GetAssemblies().ToList();
+          foreach (var f in Directory.GetFiles(AppContext.BaseDirectory, "*.dll")) { try { asms.Add(Assembly.LoadFrom(f)); } catch { } }
+          var types = asms.SelectMany(a => { try { return a.GetTypes(); } catch (ReflectionTypeLoadException e) { return e.Types.Where(t => t != null)!; } }).ToList();
+          static string N(Type t) => t.IsGenericType ? t.Name.Split('`')[0] + "<" + string.Join(",", t.GetGenericArguments().Select(N)) + ">" : t.Name;
+          foreach (var name in wanted)
+          {
+            var t = types.FirstOrDefault(x => x.FullName == name);
+            if (t == null) { Console.WriteLine($"### {name}: MISSING"); continue; }
+            Console.WriteLine($"### {name} : {N(t.BaseType!)}");
+            const BindingFlags F = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+            foreach (var m in t.GetMethods(F).Where(m => !m.IsSpecialName).OrderBy(m => m.Name))
+              Console.WriteLine($"  {(m.IsStatic ? "static " : "")}{N(m.ReturnType)} {m.Name}({string.Join(", ", m.GetParameters().Select(p => N(p.ParameterType) + " " + p.Name))})");
+            foreach (var p in t.GetProperties(F).OrderBy(p => p.Name)) Console.WriteLine($"  prop {N(p.PropertyType)} {p.Name}{(p.CanWrite ? " {set}" : "")}");
+            foreach (var e in t.GetEvents(F).OrderBy(e => e.Name)) Console.WriteLine($"  event {N(e.EventHandlerType!)} {e.Name}");
+            foreach (var c in t.GetConstructors(BindingFlags.Public | BindingFlags.Instance)) Console.WriteLine($"  ctor({string.Join(", ", c.GetParameters().Select(p => N(p.ParameterType) + " " + p.Name))})");
+          }
+          foreach (var t in types.Where(x => x.FullName is "Gtk.SignalListItemFactory+SetupSignalArgs" or "Gtk.SignalListItemFactory+BindSignalArgs" or "Gtk.ListView+ActivateSignalArgs" or "Adw.Toggle")) 
+            foreach (var p in t.GetProperties()) Console.WriteLine($"  {t.FullName}.{p.Name}: {N(p.PropertyType)}");
+          Console.WriteLine("Adw version consts: " + string.Join(", ", types.Where(x => x.FullName == "Adw.Constants").SelectMany(x => x.GetFields()).Select(f => f.Name + "=" + f.GetValue(null))));
+          CS
+          dotnet run -c Release 2>&1 | grep -v "warning" | tee members.txt | head -c 400000
