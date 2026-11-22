@@ -376,6 +376,13 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
             ToggleSidebar();
             return Task.FromResult($"sidebar={_split.ShowSidebar}");
         });
+        // "window-size W H": GTK 4 resizes a shown window through its default size.
+        LinuxDebugBridge.Register("window-size", args =>
+        {
+            if (args.Length < 2 || !int.TryParse(args[0], out var width) || !int.TryParse(args[1], out var height)) return Task.FromResult("usage: window-size WIDTH HEIGHT");
+            _window.SetSize(width, height);
+            return Task.FromResult("ok");
+        });
         LinuxDebugBridge.Register("sync", _ =>
         {
             Synchronize();

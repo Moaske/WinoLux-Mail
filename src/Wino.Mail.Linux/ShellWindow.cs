@@ -78,6 +78,9 @@ public sealed class ShellWindow
 
     public void Present() => _window.Present();
 
+    /// <summary>Resizes the window (GTK 4 resizes a shown window through its default size).</summary>
+    public void SetSize(int width, int height) => _window.SetDefaultSize(width, height);
+
     /// <summary>Shows a toast over the window's content. UI thread.</summary>
     public void ShowToast(Adw.Toast toast) => _toasts.AddToast(toast);
 
