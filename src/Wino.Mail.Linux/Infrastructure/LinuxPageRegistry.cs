@@ -1,4 +1,5 @@
 using Wino.Core.Domain.Enums;
+using Wino.Mail.Linux.Views.Mail;
 using Wino.Mail.Linux.Views.Onboarding;
 using Wino.Mail.ViewModels.Data;
 using Wino.Mail.ViewModels.Navigation;
@@ -21,6 +22,7 @@ public sealed class LinuxPageRegistry
         Register<ProviderSelectionPage>(WinoPage.ProviderSelectionPage, NavigationHostKind.Window);
         Register<SpecialImapCredentialsPage>(WinoPage.SpecialImapCredentialsPage, NavigationHostKind.Window);
         Register<AccountSetupProgressPage>(WinoPage.AccountSetupProgressPage, NavigationHostKind.Window);
+        Register<MailListPage>(WinoPage.MailListPage, NavigationHostKind.ShellContent);
         // Editing an account's servers belongs to Settings, which arrives later; adding an account uses the window.
         Register<ImapCalDavSettingsPage>(WinoPage.ImapCalDavSettingsPage, NavigationHostKind.Window);
         _hostResolvers[WinoPage.ImapCalDavSettingsPage] = parameter =>
