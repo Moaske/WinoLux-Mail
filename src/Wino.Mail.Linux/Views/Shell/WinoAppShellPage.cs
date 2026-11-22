@@ -53,6 +53,12 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
     /// <summary>The page in the content area, for the navigation host.</summary>
     public ILinuxPage? Content => _child;
 
+    /// <summary>True while the pane sits beside the content (wide layout, open), where its header names the folder.</summary>
+    public bool IsSidebarDocked => _split.ShowSidebar && !_split.Collapsed;
+
+    /// <summary>Raised on the UI thread when <see cref="IsSidebarDocked"/> may have changed.</summary>
+    public event EventHandler? SidebarDockedChanged;
+
     /// <summary>Opens or closes the pane: docked in the wide layout, as an overlay below 1008 px.</summary>
     public void ToggleSidebar() => _split.ShowSidebar = !_split.ShowSidebar;
 
@@ -88,9 +94,12 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
         _split.ShowSidebar = ViewModel.PreferencesService.IsNavigationPaneOpened;
         _split.OnNotify += (_, args) =>
         {
+            var name = args.Pspec.GetName();
+            if (name is not ("show-sidebar" or "collapsed")) return;
             // The pane's open state is a preference only in the wide layout; the overlay closes after each pick.
-            if (args.Pspec.GetName() == "show-sidebar" && !_split.Collapsed)
+            if (name == "show-sidebar" && !_split.Collapsed)
                 ViewModel.PreferencesService.IsNavigationPaneOpened = _split.ShowSidebar;
+            SidebarDockedChanged?.Invoke(this, EventArgs.Empty);
         };
         ApplySizeClass(_window.SizeClass);
         _window.SizeClassChanged += SizeClassChanged;

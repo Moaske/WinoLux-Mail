@@ -20,6 +20,7 @@ public sealed class MailListPage(LinuxNavigationService navigation, ShellWindow 
     private readonly Adw.NavigationSplitView _split = Adw.NavigationSplitView.New();
     private readonly Adw.WindowTitle _listTitle = Adw.WindowTitle.New(string.Empty, string.Empty);
     private readonly Adw.StatusPage _listStatus = Adw.StatusPage.New();
+    private readonly Adw.HeaderBar _listHeader = Adw.HeaderBar.New();
     private WinoAppShellPage? _shell;
     private Gtk.Widget? _widget;
 
@@ -33,18 +34,19 @@ public sealed class MailListPage(LinuxNavigationService navigation, ShellWindow 
         var sidebarToggle = Gtk.Button.NewFromIconName("sidebar-show-symbolic");
         sidebarToggle.TooltipText = Translator.MacOSMenu_ToggleSidebar;
         sidebarToggle.OnClicked += (_, _) => _shell?.ToggleSidebar();
-        var listHeader = Adw.HeaderBar.New();
-        listHeader.TitleWidget = _listTitle;
-        listHeader.PackStart(sidebarToggle);
+        _listHeader.TitleWidget = _listTitle;
+        _listHeader.PackStart(sidebarToggle);
         _listStatus.IconName = "mail-unread-symbolic";
         _listStatus.Description = Translator.ComingSoon;
         _listStatus.Vexpand = true;
         var list = Adw.ToolbarView.New();
-        list.AddTopBar(listHeader);
+        list.AddTopBar(_listHeader);
         list.Content = _listStatus;
 
         var reader = Adw.ToolbarView.New();
-        reader.AddTopBar(Adw.HeaderBar.New());
+        var readerHeader = Adw.HeaderBar.New();
+        readerHeader.ShowTitle = false;
+        reader.AddTopBar(readerHeader);
         var empty = Adw.StatusPage.New();
         empty.Child = WinoIcons.Label(Wino.Core.Domain.Enums.WinoIconGlyph.Mail, 20);
         empty.Title = Translator.NoMailSelected;
@@ -66,6 +68,8 @@ public sealed class MailListPage(LinuxNavigationService navigation, ShellWindow 
         {
             _ = Widget;
             _shell = navigation.Shell;
+            if (_shell is not null) _shell.SidebarDockedChanged += SidebarDockedChanged;
+            ApplyListTitle();
             var name = folder?.BaseFolderMenuItem?.FolderName ?? string.Empty;
             _listTitle.Title = name;
             _listStatus.Title = name;
@@ -77,8 +81,14 @@ public sealed class MailListPage(LinuxNavigationService navigation, ShellWindow 
     public Task ReleaseAsync() => dispatcher.ExecuteOnUIThread(() =>
     {
         window.SizeClassChanged -= SizeClassChanged;
+        if (_shell is not null) _shell.SidebarDockedChanged -= SidebarDockedChanged;
         _shell = null;
     });
+
+    private void SidebarDockedChanged(object? sender, EventArgs args) => ApplyListTitle();
+
+    /// <summary>The docked sidebar's header already names the folder; otherwise the list header does.</summary>
+    private void ApplyListTitle() => _listHeader.ShowTitle = _shell?.IsSidebarDocked != true;
 
     private void SizeClassChanged(object? sender, WinoSizeClass sizeClass) => ApplySizeClass(sizeClass);
 
