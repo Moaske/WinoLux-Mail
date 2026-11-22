@@ -5,7 +5,9 @@ using Serilog;
 using Wino.Core;
 using Wino.Core.Domain.Interfaces;
 using Wino.Mail.Linux.Infrastructure;
+using Wino.Mail.Linux.Views.Mail;
 using Wino.Mail.Linux.Views.Onboarding;
+using Wino.Mail.Linux.Views.Shell;
 using Wino.Mail.ViewModels;
 using Wino.Mail.ViewModels.Lifecycle;
 using Wino.Platform.Linux;
@@ -67,5 +69,7 @@ internal static class LinuxComposition
         services.AddTransient<SpecialImapCredentialsPage>();
         services.AddTransient<ImapCalDavSettingsPage>();
         services.AddTransient<AccountSetupProgressPage>();
+        services.AddTransient<WinoAppShellPage>();
+        services.AddTransient<MailListPage>();
     }
 }

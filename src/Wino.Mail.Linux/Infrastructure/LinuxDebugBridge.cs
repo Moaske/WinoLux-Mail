@@ -13,6 +13,7 @@ namespace Wino.Mail.Linux.Infrastructure;
 /// </summary>
 public static class LinuxDebugBridge
 {
+    private static IDispatcher? _dispatcher;
     private static readonly ConcurrentDictionary<string, Func<string[], Task<string>>> Commands = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, WeakReference<Gtk.Widget>> FocusTargets = new(StringComparer.OrdinalIgnoreCase);
     private static Timer? _timer;
@@ -25,6 +26,7 @@ public static class LinuxDebugBridge
 
     public static void Start(string cacheRoot, IDispatcher dispatcher, LinuxNavigationService navigation)
     {
+        _dispatcher = dispatcher;
         var folder = Path.Combine(cacheRoot, "debug");
         Directory.CreateDirectory(folder);
         var commandFile = Path.Combine(folder, "cmd");
@@ -59,9 +61,15 @@ public static class LinuxDebugBridge
                 string result;
                 try
                 {
-                    result = Commands.TryGetValue(parts[0], out var command)
-                        ? await command(parts[1..])
-                        : "unknown command " + parts[0];
+                    if (Commands.TryGetValue(parts[0], out var command))
+                    {
+                        // Commands start on the UI thread, where GTK widgets and the ViewModels' UI state live.
+                        Task<string> running = Task.FromResult(string.Empty);
+                        var arguments = parts[1..];
+                        await (_dispatcher?.ExecuteOnUIThread(() => running = command(arguments)) ?? Task.CompletedTask);
+                        result = await running;
+                    }
+                    else result = "unknown command " + parts[0];
                 }
                 catch (Exception error) { result = "error: " + error.Message; }
                 await File.AppendAllTextAsync(output, $"{line} => {result}{Environment.NewLine}");

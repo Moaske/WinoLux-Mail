@@ -32,6 +32,8 @@
        provider logos and the What's New release notes, as the Android head ships them. -->
   <ItemGroup>
     <Content Include="../Wino.Mail.WinUI/Assets/Providers/*.png" Link="PackagedResources/Assets/Providers/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- The Material Rounded WinoIcons font (decision L1), registered with fontconfig by WinoIcons.Register. -->
+    <Content Include="../../icons/fonts/WinoIconsMaterialRounded.ttf" Link="PackagedResources/Fonts/WinoIcons.ttf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="../Wino.Mail.WinUI/Assets/WhatsNew/*.json;../Wino.Mail.WinUI/Assets/WhatsNew/*.png" Link="PackagedResources/Assets/WhatsNew/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

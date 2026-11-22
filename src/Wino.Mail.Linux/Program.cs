@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Wino.Mail.Linux.Infrastructure;
+using Wino.Mail.Linux.Presentation;
 using Wino.Mail.ViewModels.Lifecycle;
 using Wino.Platform.Linux;
 using Wino.Platform.Linux.Services;
@@ -21,6 +22,9 @@ public static class Program
 
     public static int Main()
     {
+        // Before GTK creates its font map, so Pango sees the icon font.
+        if (!WinoIcons.Register(Path.Combine(AppContext.BaseDirectory, "PackagedResources")))
+            Console.Error.WriteLine("WinoLux: the WinoIcons font could not be registered; icons will be missing.");
         Adw.Module.Initialize();
 
         var application = Adw.Application.New(ApplicationId, Gio.ApplicationFlags.DefaultFlags);
@@ -77,6 +81,7 @@ public static class Program
             return;
         }
 
+        WinoStyles.Install();
         var window = new ShellWindow(application);
         _window = window;
         window.Present();

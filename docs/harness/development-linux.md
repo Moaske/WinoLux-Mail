@@ -2,7 +2,7 @@
 
 This is the guide for the Linux application in `src/Wino.Mail.Linux` and its solution `WinoMail.Linux.slnx`, part of the WinoLux Mail fork.
 
-**Status (16 November 2026): milestone 2b.** Linux is a build platform; CI builds and packages the head, which starts the shared runtime through the Linux platform services (data under the XDG folders, the protection key in the Secret Service, the shared startup order). Without accounts the window opens onboarding: Welcome, the provider wizard (provider, account name and colour, what the account is used for), the IMAP sign-in and server pages, and setup progress. Outlook and Gmail stay hidden until WinoLux has its own sign-in registrations (L3). After setup a placeholder lists the accounts; the three-pane shell follows in milestone 2c and the mail list in 2d. Sections still marked *planned* describe later milestones.
+**Status (22 November 2026): milestone 2c.** Linux is a build platform; CI builds and packages the head, which starts the shared runtime through the Linux platform services (data under the XDG folders, the protection key in the Secret Service, the shared startup order). Without accounts the window opens onboarding: Welcome, the provider wizard (provider, account name and colour, what the account is used for), the IMAP sign-in and server pages, and setup progress. Outlook and Gmail stay hidden until WinoLux has its own sign-in registrations (L3). With an account the window shows the shell: the sidebar with the Mail menu (New Mail, accounts, folders with unread counts), the sync button with the folder title, the main menu and the mode switcher, beside the Mail page's list and reader panes in Wino's three size classes. The list and reader stay empty until milestone 2d; Calendar, Contacts, To Do and Settings show "Coming soon". Sections still marked *planned* describe later milestones.
 
 The app uses the shared .NET services, ViewModels, translations, and editor engine through explicit adapters over GTK 4 and libadwaita (Gir.Core bindings). It does not use Avalonia, Uno, MAUI, or Electron.
 
@@ -41,7 +41,7 @@ See the project map in [Linux design decisions](../linux-design-decisions.md#pro
 
 | Project | Status | Role |
 | --- | --- | --- |
-| `src/Wino.Mail.Linux` | Onboarding (IMAP) | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
+| `src/Wino.Mail.Linux` | Onboarding (IMAP), shell | App head (`io.github.moaske.WinoLux`, program `WinoLux`) |
 | `src/Wino.Platform.Linux` | Startup services | Platform services; no presentation references |
 | `controls/Wino.Presentation.Gtk` | Planned | Units, WinoIcons, libadwaita CSS, zones, backdrops, bindings |
 | `controls/Wino.Mail.Controls.Gtk` | Planned | Wino-drawn rows and controls |
@@ -69,6 +69,9 @@ GTK's inspector helps with layout checks: run with `GTK_DEBUG=interactive`, or p
 
 ## Pages and the debug bridge
 
+The shell (`Views/Shell/WinoAppShellPage`) follows the Mac `WinoAppShellViewController`: the shared `ShellModeActivator` switches modes, the sidebar draws the shared `ShellMenuRowPresentation` rows (as Android does), and the mode's root page is routed into the content area as `NavigationHostKind.ShellContent`. `ShellWindow` reports Wino's size classes through two `AdwBreakpoint`s (Medium below 1008 px, Small below 641 px). Icons are the WinoIcons Material Rounded font (L1), shipped as `PackagedResources/Fonts/WinoIcons.ttf` and registered with fontconfig before GTK starts (`Presentation/WinoIcons`); the few Wino styles are in `Presentation/WinoStyles`.
+
+
 Pages follow the Mac head: each routed page is a `LinuxPage<TViewModel>` (in `Infrastructure/LinuxPage.cs`) that builds its widgets once in `BuildView`, binds them to the shared ViewModel through the shared `Wino.Presentation.Bindings` (`GtkForm` adds the GTK widgets), and gets the shared navigation lifecycle from `LinuxNavigationService`. `LinuxPageRegistry` maps each `WinoPage` to a page; the composition root registers every page explicitly, so Native AOT keeps them.
 
 Debug builds start a file bridge, the Mac `MacDebugBridge`'s twin, for checks without screen access. Write one command per line to `~/.cache/WinoLux/debug/cmd`; each result is appended to `~/.cache/WinoLux/debug/out.log`.
@@ -82,6 +85,8 @@ Debug builds start a file bridge, the Mac `MacDebugBridge`'s twin, for checks wi
 | `provider NAME\|TYPE`, `provider-name NAME`, `provider-capability AREA MODE`, `provider-continue`, `provider-state` | Drive the provider wizard |
 | `imap-identity NAME ADDRESS`, `imap-incoming HOST PORT SECURITY AUTH`, `imap-outgoing ...`, `imap-continue`, `imap-state` | Drive the IMAP pages (security and authentication are drop-down positions; `imap-state` lists them) |
 | `setup-state` | Setup progress |
+| `shell-state` | Mode, selected folder, pane title and subtitle, sidebar state, size class, content page, and the sidebar rows |
+| `folder NAME`, `mode MODE`, `sidebar-toggle`, `sync` | Click a sidebar folder, pick a mode segment, open or close the sidebar, press the sync button |
 
 The bridge only selects, navigates and focuses. No command fills a password: a test focuses the field and types, as a person would. Release builds do not contain the bridge.
 
