@@ -112,7 +112,6 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
                 _sidebar.SetSelectedItem(item as IMenuItem);
                 ObserveTitle(item as INotifyPropertyChanged);
                 UpdateTitle();
-                if (_split.Collapsed && item is IBaseFolderMenuItem) _split.ShowSidebar = false;
             }, Dispatcher, ReportError));
         Bindings.Own(new PropertyBinding<WinoAppShellViewModel, IShellMenuProvider?>(ViewModel, nameof(ViewModel.CurrentProvider),
             vm => vm.CurrentProvider, ObserveProvider, Dispatcher, ReportError));
@@ -296,6 +295,8 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
         try
         {
             if (!ShellMenuItemRules.IsEnabled(item)) return;
+            // The overlay pane closes after a pick, including the folder already shown.
+            if (_split.Collapsed && item is IBaseFolderMenuItem) _split.ShowSidebar = false;
             // Folders select themselves when their navigation starts (MailAppShellViewModel.NavigateFolderAsync), as on the Mac.
             if (ViewModel.HandlesSelection && ShellMenuItemRules.SelectsOnInvoked(item) && item is not IBaseFolderMenuItem)
                 ViewModel.SelectedMenuItem = item;
