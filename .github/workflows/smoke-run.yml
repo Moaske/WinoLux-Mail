@@ -111,11 +111,11 @@ jobs:
             cmd folder Inbox; sleep 2; cmd shell-state
             cmd mode Calendar; sleep 1; shot sh-2-mode-toast; cmd shell-state
             W=$(xdotool search --name "WinoLux" | head -1); echo "window $W"
-            xdotool windowsize $W 900 700; sleep 3; cmd shell-state; shot sh-3-medium
+            cmd window-size 900 700; sleep 3; cmd shell-state; shot sh-3-medium
             cmd sidebar-toggle; sleep 2; shot sh-4-medium-overlay; cmd shell-state
             cmd folder Inbox; sleep 2; cmd shell-state; shot sh-4b-medium-after-pick
-            xdotool windowsize $W 560 700; sleep 3; cmd shell-state; shot sh-5-small
-            xdotool windowsize $W 1100 720; sleep 3; cmd shell-state
+            cmd window-size 560 700; sleep 3; cmd shell-state; shot sh-5-small
+            cmd window-size 1100 720; sleep 3; cmd shell-state
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- security: files containing the password (expect none)"; grep -rlaF "Smoke-Pw-4711x" "$HOME/.local/share/WinoLux" "$HOME/.config/WinoLux" "$HOME/.cache/WinoLux" || echo "none"
             echo "--- security: password references in the database"; grep -aoE "wino-keychain:v1:[A-Za-z0-9:_-]{0,40}" "$HOME"/.local/share/WinoLux/data/Wino*.db | sort -u | head
