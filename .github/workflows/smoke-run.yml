@@ -73,7 +73,7 @@ jobs:
               flags = '(\\Seen)' if count % 3 else ''
               if count == 1: flags = '(\\Flagged)'
               imap.append('INBOX', flags, imaplib.Time2Internaldate(when), m.as_bytes()); count += 1
-          imap.create('Archive'); imap.logout(); print(f'appended {count} older messages, created Archive')
+          imap.create('Archive'); imap.create('Trash'); imap.logout(); print(f'appended {count} older messages, created Archive')
           PY
       - name: Write the upgrade scenario
         run: |
@@ -166,6 +166,20 @@ jobs:
             cmd mail-select Quarterly report; sleep 8; cmd reader-state; cmd reader-body; shot rd-2-attachment
             cmd mail-select Smoke message 3; sleep 6; cmd reader-state; cmd reader-body; shot rd-3-plain
             cmd mail-state
+            echo "--- action checks"
+            cmd mail-select Smoke message 1; sleep 3; cmd mail-command
+            cmd mail-command flag; sleep 5; cmd mail-state
+            cmd mail-command read; sleep 5; cmd mail-state; cmd mail-command
+            cmd mail-context 2; sleep 1; shot ac-1-context; xdotool key Escape; sleep 1
+            cmd mail-select Smoke message 5; sleep 2; cmd shortcut U Control; sleep 5; cmd mail-state
+            cmd shortcut G Control Shift; sleep 5; cmd mail-state
+            cmd mail-select Smoke message 4; sleep 2; cmd mail-command archive; sleep 8; cmd mail-state
+            cmd shell-state
+            cmd mail-select Smoke message 3; sleep 2; cmd mail-command delete; sleep 8; cmd mail-state
+            cmd mail-select Smoke message 2; sleep 2; cmd mail-command move; sleep 3; shot ac-2-move; xdotool key Escape; sleep 1
+            cmd mail-select Older message 1 from 1 days ago; sleep 2; xdotool mousemove 500 300 click 1; sleep 1; xdotool key Delete; sleep 8; cmd mail-state
+            cmd folder Archive; sleep 5; cmd mail-state; cmd folder Trash; sleep 5; cmd mail-state; cmd folder Inbox; sleep 4
+            cmd window-size 700 700; sleep 3; cmd shell-state; cmd mail-select 0; sleep 4; shot ac-3-singlepane; cmd window-size 1100 720; sleep 2
             cmd window-size 900 700; sleep 3; cmd shell-state; shot sh-3-medium
             cmd sidebar-toggle; sleep 2; shot sh-4-medium-overlay; cmd shell-state
             cmd folder Inbox; sleep 2; cmd shell-state; shot sh-4b-medium-after-pick
@@ -191,7 +205,7 @@ jobs:
             grep -rh "Forgot" "$HOME/.local/share/WinoLux" 2>/dev/null | tail -3
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
-            for f in sh-*.png ml-*.png rd-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
+            for f in sh-*.png ml-*.png rd-*.png ac-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
