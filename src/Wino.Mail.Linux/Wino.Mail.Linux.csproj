@@ -19,6 +19,8 @@
     <PackageReference Include="GirCore.Adw-1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Serilog.Extensions.Logging" />
+    <!-- The shared thumbnail service sizes sender pictures with SkiaSharp, whose package carries no Linux library. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
   <ItemGroup>
