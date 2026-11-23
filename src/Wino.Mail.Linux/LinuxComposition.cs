@@ -72,5 +72,6 @@ internal static class LinuxComposition
         services.AddTransient<WinoAppShellPage>();
         services.AddTransient<MailListPage>();
         services.AddSingleton<LinuxSenderPictureProvider>();
+        services.AddSingleton<IApplicationLifecycleHook, LinuxSenderPictureRecoveryHook>();
     }
 }
