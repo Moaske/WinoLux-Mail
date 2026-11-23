@@ -91,7 +91,8 @@ Debug builds start a file bridge, the Mac `MacDebugBridge`'s twin, for checks wi
 | `shell-state` | Mode, selected folder, pane title and subtitle, sidebar state, size class, content page, and the sidebar rows |
 | `folder NAME`, `mode MODE`, `sidebar-toggle`, `sync` | Click a sidebar folder, pick a mode segment, open or close the sidebar, press the sync button |
 | `mail-state` | Mail rows, entries (rows and date headers), selection count, folder, and the first entries (`*` marks unread) |
-| `mail-select N...` | Selects mail rows by position among the mail rows (date headers not counted) |
+| `mail-select N...` or `mail-select TEXT` | Selects mail rows by position among the mail rows (date headers not counted), or the first row whose subject contains the text |
+| `reader-state`, `reader-body` | The reader's subject, sender, recipients, attachments and remote-content state; the first part of the rendered body text |
 
 The bridge only selects, navigates and focuses. No command fills a password: a test focuses the field and types, as a person would. Release builds do not contain the bridge.
 
