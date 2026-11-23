@@ -444,18 +444,15 @@ public sealed class LinuxDialogService(IDispatcher dispatcher, ShellWindow windo
         await _presentations.WaitAsync();
         try
         {
-            var completion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<Gio.File?>? picking = null;
             await dispatcher.ExecuteOnUIThread(() =>
             {
                 var chooser = Gtk.FileDialog.New();
                 chooser.Modal = true;
-                chooser.SelectFolder(window.Widget as Gtk.Window, null, (_, result) =>
-                {
-                    try { completion.TrySetResult(chooser.SelectFolderFinish(result)?.GetPath() ?? string.Empty); }
-                    catch (GLib.GException) { completion.TrySetResult(string.Empty); }
-                });
+                picking = chooser.SelectFolderAsync(window.Widget as Gtk.Window);
             });
-            return await completion.Task;
+            try { return (picking is null ? null : await picking)?.GetPath() ?? string.Empty; }
+            catch (GLib.GException) { return string.Empty; }
         }
         finally { _presentations.Release(); }
     }

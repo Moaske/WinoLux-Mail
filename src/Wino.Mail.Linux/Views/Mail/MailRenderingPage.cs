@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using CommunityToolkit.Mvvm.Messaging;
 using Wino.Core.Domain;
 using Wino.Core.Domain.Enums;
 using Wino.Core.Domain.Interfaces;
@@ -388,7 +389,7 @@ public sealed class MailRenderingPage(MailRenderingPageViewModel viewModel, IDis
     }
 
     private void CloseRequested(object? sender, EventArgs args)
-        => CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new Wino.Messaging.Client.Mails.DisposeRenderingFrameRequested());
+        => WeakReferenceMessenger.Default.Send(new Wino.Messaging.Client.Mails.DisposeRenderingFrameRequested());
 
     private async Task DisposeReaderAsync()
     {

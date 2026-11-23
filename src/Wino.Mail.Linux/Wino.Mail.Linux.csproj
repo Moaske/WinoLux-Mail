@@ -39,4 +39,10 @@
     <Content Include="../../icons/fonts/WinoIconsMaterialRounded.ttf" Link="PackagedResources/Fonts/WinoIcons.ttf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="../Wino.Mail.WinUI/Assets/WhatsNew/*.json;../Wino.Mail.WinUI/Assets/WhatsNew/*.png" Link="PackagedResources/Assets/WhatsNew/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+  <!-- A Linux-only project: WebKitGTK's bindings are marked unsupported on Windows and macOS. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>linux</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>
