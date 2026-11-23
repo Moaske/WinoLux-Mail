@@ -97,7 +97,9 @@ internal sealed class WebKitGtkBrowserSession
         string? generation = _sessionId;
         return await OnUIAsync(async () =>
         {
-            var result = await Browser.EvaluateJavascriptAsync("String((" + expression + ") ?? '')");
+            // JavaScriptCore values are GObjects: release each one at once, or the garbage collector may drop the
+            // wrapper while WebKit still references the value (Gir.Core then warns about a toggle reference).
+            using var result = await Browser.EvaluateJavascriptAsync("String((" + expression + ") ?? '')");
             if (_disposed || generation != _sessionId) throw new ObjectDisposedException(nameof(WebKitGtkBrowserSession));
             return result.ToString();
         });
@@ -121,7 +123,8 @@ internal sealed class WebKitGtkBrowserSession
         if (Browser.GetUri() is not (null or "about:blank")) return;
         try
         {
-            string json = args.Value.ToString();
+            string json;
+            using (var value = args.Value) json = value.ToString();
             var message = JsonSerializer.Deserialize(json, EditorJsonContext.Default.EditorMessage);
             if (_sessionId is null || message?.SessionId != _sessionId) return;
             if (message.Type == "ready") _ready.TrySetResult();

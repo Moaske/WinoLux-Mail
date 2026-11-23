@@ -58,6 +58,11 @@ public sealed class MailRenderingPage(MailRenderingPageViewModel viewModel, IDis
         // ---- Sender block: avatar | name, address and recipients | date ----
         _avatar.Valign = Gtk.Align.Start;
         _senderName.Selectable = true;
+        // The sender row must fit a narrow reader column: the name ellipsizes and the date wraps.
+        _senderName.Ellipsize = Pango.EllipsizeMode.End;
+        _date.Wrap = true;
+        _date.MaxWidthChars = 18;
+        _date.Justify = Gtk.Justification.Right;
         _senderAddress.Selectable = true;
         _senderAddress.Ellipsize = Pango.EllipsizeMode.End;
         _recipients.Wrap = true;
@@ -429,7 +434,7 @@ public sealed class MailRenderingPage(MailRenderingPageViewModel viewModel, IDis
             {
                 try
                 {
-                    var value = await _webView.EvaluateJavascriptAsync(
+                    using var value = await _webView.EvaluateJavascriptAsync(
                         "String((document.getElementById('wino-reader')?.shadowRoot?.textContent ?? document.body.innerText) || '').replace(/\\s+/g,' ').trim().slice(0,300)");
                     text.TrySetResult(value.ToString());
                 }
