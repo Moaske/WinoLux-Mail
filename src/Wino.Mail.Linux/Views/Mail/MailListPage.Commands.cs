@@ -50,6 +50,43 @@ public sealed partial class MailListPage
         _readerCommands = GtkUi.Row(8, file, mark, _moreButton);
         header.PackStart(_readerCommands);
         UpdateMailCommands();
+        RegisterCommandDebugCommands();
+    }
+
+    /// <summary>
+    /// Debug bridge commands: <c>mail-command archive|delete|move|flag|read|more</c> clicks the reader header button
+    /// (answers the buttons' tooltips first), and <c>mail-context N</c> opens the context menu on the Nth mail row and
+    /// answers its items.
+    /// </summary>
+    private void RegisterCommandDebugCommands()
+    {
+#if DEBUG
+        Infrastructure.LinuxDebugBridge.Register("mail-command", args =>
+        {
+            if (_released) return Task.FromResult("released");
+            var buttons = new Dictionary<string, Gtk.Button>
+            {
+                ["archive"] = _archiveButton, ["delete"] = _deleteButton, ["move"] = _moveButton,
+                ["flag"] = _flagButton, ["read"] = _readButton, ["more"] = _moreButton
+            };
+            var state = $"visible={_readerCommands.Visible} " + string.Join(" ", buttons.Select(pair => $"{pair.Key}='{pair.Value.TooltipText}'"));
+            if (args.Length == 0) return Task.FromResult(state);
+            if (!buttons.TryGetValue(args[0], out var button)) return Task.FromResult("unknown command");
+            button.Activate();
+            return Task.FromResult("clicked " + args[0] + " :: " + state);
+        });
+        Infrastructure.LinuxDebugBridge.Register("mail-context", args =>
+        {
+            if (_released) return Task.FromResult("released");
+            int ordinal = args.Length > 0 && int.TryParse(args[0], out var value) ? value : 0;
+            int seen = -1;
+            var entry = _entries.FirstOrDefault(candidate => candidate.Row is not null && ++seen == ordinal);
+            var slot = entry is null ? null : _slots.FirstOrDefault(candidate => candidate.Key == entry.Key && candidate.Widget.GetMapped());
+            if (slot is null) return Task.FromResult("row not shown");
+            ShowContextMenu(slot);
+            return Task.FromResult("menu: " + LastMenuDescription);
+        });
+#endif
     }
 
     private static Gtk.Button CommandButton(Action clicked)
@@ -149,6 +186,9 @@ public sealed partial class MailListPage
         ShowActionMenu(slot.Widget, targets, row);
     }
 
+    /// <summary>The last menu's items, for the debug bridge.</summary>
+    private string LastMenuDescription { get; set; } = string.Empty;
+
     private void ShowActionMenu(Gtk.Widget anchor, IReadOnlyList<MailItemViewModel> targets, MailListRow? row)
     {
         var menu = new ActionMenu();
@@ -170,6 +210,7 @@ public sealed partial class MailListPage
             menu.Separator();
             menu.Add(row.IsExpanded ? Translator.MacOS_MailList_CollapseThread : Translator.MacOS_MailList_ExpandThread, true, () => ToggleThread(row));
         }
+        LastMenuDescription = menu.Description;
         menu.Popup(anchor);
     }
 
@@ -237,9 +278,13 @@ public sealed partial class MailListPage
         private readonly Gio.SimpleActionGroup _actions = Gio.SimpleActionGroup.New();
         private Gio.Menu _section = Gio.Menu.New();
         private int _count;
+        private readonly List<string> _titles = [];
+
+        public string Description => string.Join(" | ", _titles);
 
         public void Add(string title, bool enabled, Action invoked)
         {
+            _titles.Add(enabled ? title : $"({title})");
             var name = "item" + (_count++).ToString(System.Globalization.CultureInfo.InvariantCulture);
             var action = Gio.SimpleAction.New(name, null);
             action.Enabled = enabled;
@@ -251,6 +296,7 @@ public sealed partial class MailListPage
         public void Separator()
         {
             if (_section.GetNItems() == 0) return;
+            _titles.Add("—");
             _menu.AppendSection(null, _section);
             _section = Gio.Menu.New();
         }
