@@ -25,7 +25,7 @@ jobs:
       - name: Desktop libraries, virtual screen, keyring
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang zlib1g-dev libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring libglib2.0-bin dbus-x11 xvfb imagemagick x11-utils xdotool sqlite3 openbox
+          sudo apt-get install -y clang zlib1g-dev libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring libglib2.0-bin dbus-x11 xvfb imagemagick x11-utils xdotool sqlite3 libwebkitgtk-6.0-4 openbox
           cat /etc/os-release | grep PRETTY; dpkg -l | grep -E "libadwaita-1-0|libgtk-4-1 " | awk '{print $2, $3}'
       - name: Publish
         run: |
@@ -44,7 +44,12 @@ jobs:
               m = EmailMessage(); m['From'] = 'Alice Lab <alice@example.test>'; m['To'] = 'dave@greenmail.test'
               m['Subject'] = f'Smoke message {i}'; m.set_content(f'Body of smoke message {i}.')
               s.send_message(m)
-          s.quit(); print('seeded 5 messages')
+          html = EmailMessage(); html['From'] = 'Shop News <news@shop.example>'; html['To'] = 'dave@greenmail.test'
+          html['Subject'] = 'Newsletter with a remote image'
+          html.set_content('Plain fallback text.')
+          html.add_alternative('<html><body><h1>Spring sale</h1><p>Hello Dave, <b>everything</b> is 20% off this week.</p><p><img src="https://images.example.com/banner.png" width="300" height="80" alt="banner"></p><p>Read more on <a href="https://shop.example/sale?utm_source=mail&amp;utm_medium=newsletter">our website</a>.</p></body></html>', subtype='html')
+          s.send_message(html)
+          s.quit(); print('seeded 5 messages and a newsletter')
           # Older mail straight into the Inbox, for the date groups, read and flag marks, an attachment and paging.
           import imaplib, email.utils, datetime
           from email.mime.multipart import MIMEMultipart
@@ -156,6 +161,11 @@ jobs:
             xdotool mousemove 500 420; for i in $(seq 1 60); do xdotool click 5; sleep 0.05; done; sleep 4; cmd mail-state; shot ml-3-scrolled
             cmd shell-state; cmd folder Archive; sleep 4; cmd mail-state; shot ml-4-empty-folder
             cmd folder Inbox; sleep 4; cmd mail-state
+            echo "--- reader checks"
+            cmd mail-select Newsletter with a remote image; sleep 8; cmd reader-state; cmd reader-body; shot rd-1-newsletter
+            cmd mail-select Quarterly report; sleep 8; cmd reader-state; cmd reader-body; shot rd-2-attachment
+            cmd mail-select Smoke message 3; sleep 6; cmd reader-state; cmd reader-body; shot rd-3-plain
+            cmd mail-state
             cmd window-size 900 700; sleep 3; cmd shell-state; shot sh-3-medium
             cmd sidebar-toggle; sleep 2; shot sh-4-medium-overlay; cmd shell-state
             cmd folder Inbox; sleep 2; cmd shell-state; shot sh-4b-medium-after-pick
@@ -181,7 +191,7 @@ jobs:
             grep -rh "Forgot" "$HOME/.local/share/WinoLux" 2>/dev/null | tail -3
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
-            for f in sh-*.png ml-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
+            for f in sh-*.png ml-*.png rd-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
