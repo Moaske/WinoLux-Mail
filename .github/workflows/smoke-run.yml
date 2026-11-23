@@ -160,9 +160,10 @@ jobs:
             sleep 20; cmd page; cmd shell-state; shot sh-6-dark
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- output 5"; cat app5.out
-            echo "--- sixth launch prep: forget every sender picture, so the AOT build fetches them itself"
+            echo "--- sixth launch prep: an installation from before the fix (GitHub stored as 'no picture', no cache, repair not yet run)"
             rm -rf "$HOME/.local/share/WinoLux/data/thumbnails"
-            for db in "$HOME"/.local/share/WinoLux/data/Wino*.db; do sqlite3 "$db" "DELETE FROM Thumbnail;" && echo "cleared $db"; done
+            sqlite3 "$HOME/.local/share/WinoLux/data/Wino210.db" "DELETE FROM Thumbnail; INSERT INTO Thumbnail (Domain, GravatarFileName, FaviconFileName, LastUpdated) VALUES ('notifications@github.com', NULL, NULL, 0); SELECT COUNT(*) FROM Thumbnail;"
+            for cfg in $(grep -rl "SenderPictureMissesCleared" "$HOME" "${XDG_CONFIG_HOME:-/nonexistent}" 2>/dev/null); do python3 -c "import json,sys; p=sys.argv[1]; d=json.load(open(p)); d.pop('Linux.SenderPictureMissesCleared.v1', None); json.dump(d, open(p,'w'))" "$cfg" && echo "reset repair flag in $cfg"; done
             echo "--- sixth launch (Native AOT): the shell and message list with the account"
             ( ./aot/WinoLux > app6.out 2>&1; echo "exit code $?" >> app6.out ) &
             sleep 20; shot ml-5-aot
@@ -170,6 +171,7 @@ jobs:
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- output 6"; cat app6.out
             echo "--- AOT picture cache"; ls -la "$HOME/.local/share/WinoLux/data/thumbnails" || echo "no thumbnails folder"
+            grep -rh "no picture" "$HOME/.local/share/WinoLux" 2>/dev/null | tail -3
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in sh-*.png ml-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
