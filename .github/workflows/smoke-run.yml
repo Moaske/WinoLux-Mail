@@ -45,6 +45,30 @@ jobs:
               m['Subject'] = f'Smoke message {i}'; m.set_content(f'Body of smoke message {i}.')
               s.send_message(m)
           s.quit(); print('seeded 5 messages')
+          # Older mail straight into the Inbox, for the date groups, read and flag marks, an attachment and paging.
+          import imaplib, email.utils, datetime
+          from email.mime.multipart import MIMEMultipart
+          from email.mime.text import MIMEText
+          from email.mime.application import MIMEApplication
+          imap = imaplib.IMAP4('127.0.0.1', 3143); imap.login('dave@greenmail.test', 'Smoke-Pw-4711x')
+          now = datetime.datetime.now(datetime.timezone.utc)
+          senders = ['Bob Builder <bob@example.test>', 'Carol Lab <carol@example.test>', 'Newsletter <news@example.test>', 'AT&T Billing <billing@att.example>']
+          count = 0
+          for days in [1, 1, 2, 3, 5, 9, 16, 30, 45, 70] + list(range(80, 160, 2)):
+              when = now - datetime.timedelta(days=days, hours=count % 7)
+              sender = senders[count % len(senders)]
+              if count == 2:
+                  m = MIMEMultipart(); m.attach(MIMEText('The report is attached.'))
+                  part = MIMEApplication(b'%PDF-1.4 smoke', Name='report.pdf'); part['Content-Disposition'] = 'attachment; filename="report.pdf"'; m.attach(part)
+                  subject = 'Quarterly report with attachment'
+              else:
+                  m = MIMEText(f'Older message {count} body text with a little preview.'); subject = f'Older message {count} from {days} days ago'
+              m['From'] = sender; m['To'] = 'dave@greenmail.test'; m['Subject'] = subject; m['Date'] = email.utils.format_datetime(when)
+              m['Message-ID'] = email.utils.make_msgid(domain='example.test')
+              flags = '(\\Seen)' if count % 3 else ''
+              if count == 1: flags = '(\\Flagged)'
+              imap.append('INBOX', flags, imaplib.Time2Internaldate(when), m.as_bytes()); count += 1
+          imap.create('Archive'); imap.logout(); print(f'appended {count} older messages, created Archive')
           PY
       - name: Run under a virtual screen
         run: |
@@ -111,6 +135,14 @@ jobs:
             cmd folder Inbox; sleep 2; cmd shell-state
             cmd mode Calendar; sleep 1; shot sh-2-mode-toast; cmd shell-state
             W=$(xdotool search --name "WinoLux" | head -1); echo "window $W"
+            echo "--- mail list checks"
+            WAIT=90 cmd mail-state; sleep 10; cmd mail-state
+            shot ml-1-list
+            cmd mail-select 0; sleep 3; cmd mail-state; shot ml-2-selected
+            cmd mail-select 1 3; sleep 2; cmd mail-state
+            xdotool mousemove 500 420; for i in $(seq 1 60); do xdotool click 5; sleep 0.05; done; sleep 4; cmd mail-state; shot ml-3-scrolled
+            cmd shell-state; cmd folder Archive; sleep 4; cmd mail-state; shot ml-4-empty-folder
+            cmd folder Inbox; sleep 4; cmd mail-state
             cmd window-size 900 700; sleep 3; cmd shell-state; shot sh-3-medium
             cmd sidebar-toggle; sleep 2; shot sh-4-medium-overlay; cmd shell-state
             cmd folder Inbox; sleep 2; cmd shell-state; shot sh-4b-medium-after-pick
@@ -127,7 +159,7 @@ jobs:
             echo "--- output 5"; cat app5.out
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
-            for f in onb-7-shell.png sh-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
+            for f in sh-*.png ml-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
             echo "--- output"; cat app.out; echo "--- output 2"; cat app2.out; echo "--- output 3"; cat app3.out
             echo "--- files"; find "$HOME" -path "*/WinoLux*" | head -40
             echo "--- log"; tail -n 80 "$HOME"/.local/share/WinoLux/data/Logs/*.log 2>/dev/null || true
