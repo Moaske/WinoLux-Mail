@@ -7,7 +7,7 @@ public enum WinoSizeClass
     Large,
     /// <summary>641 to 1007 px: the sidebar becomes an overlay.</summary>
     Medium,
-    /// <summary>640 px and narrower: list and reader become a drill-in.</summary>
+    /// <summary>640 px and narrower: one column at a time (the mail page already drops to one pane below 800 px, <see cref="ShellWindow.IsSinglePane"/>).</summary>
     Small
 }
 
@@ -24,6 +24,7 @@ public sealed class ShellWindow
     private readonly Adw.ToastOverlay _toasts;
     private readonly Adw.ToolbarView _content;
     private readonly Adw.Breakpoint _medium;
+    private readonly Adw.Breakpoint _singlePane;
     private readonly Adw.Breakpoint _small;
 
     public ShellWindow(Adw.Application application)
@@ -49,15 +50,21 @@ public sealed class ShellWindow
 
         // When several breakpoints match, the last added one applies.
         _medium = Adw.Breakpoint.New(Adw.BreakpointCondition.Parse("max-width: 1007px"));
+        // Inside the medium class: below this the 380 px mail list and the reader (its header commands and sender
+        // row need about 420 px) no longer fit side by side, so the mail page shows one of them at a time.
+        _singlePane = Adw.Breakpoint.New(Adw.BreakpointCondition.Parse("max-width: 799px"));
         _small = Adw.Breakpoint.New(Adw.BreakpointCondition.Parse("max-width: 640px"));
         _window.AddBreakpoint(_medium);
+        _window.AddBreakpoint(_singlePane);
         _window.AddBreakpoint(_small);
         _window.OnNotify += (_, args) =>
         {
             if (args.Pspec.GetName() != "current-breakpoint") return;
             var next = ReadSizeClass();
-            if (next == SizeClass) return;
+            bool singlePane = IsCurrent(_singlePane) || next == WinoSizeClass.Small;
+            if (next == SizeClass && singlePane == IsSinglePane) return;
             SizeClass = next;
+            IsSinglePane = singlePane;
             SizeClassChanged?.Invoke(this, next);
         };
     }
@@ -67,7 +74,10 @@ public sealed class ShellWindow
 
     public WinoSizeClass SizeClass { get; private set; } = WinoSizeClass.Large;
 
-    /// <summary>Raised on the UI thread when the window crosses a size class.</summary>
+    /// <summary>True when the window is too narrow for the mail list and the reader side by side.</summary>
+    public bool IsSinglePane { get; private set; }
+
+    /// <summary>Raised on the UI thread when the window crosses a size class or the single-pane width.</summary>
     public event EventHandler<WinoSizeClass>? SizeClassChanged;
 
     public string Title
@@ -77,6 +87,16 @@ public sealed class ShellWindow
     }
 
     public void Present() => _window.Present();
+
+    /// <summary>The widget with keyboard focus, if any.</summary>
+    public Gtk.Widget? Focus => _window.GetFocus();
+
+    /// <summary>True while an <c>AdwDialog</c> (the app's alerts and pickers) is open over the window.</summary>
+    public bool HasVisibleDialog => _window.GetVisibleDialog() is not null;
+
+    public void AddController(Gtk.EventController controller) => _window.AddController(controller);
+
+    public void RemoveController(Gtk.EventController controller) => _window.RemoveController(controller);
 
     /// <summary>Resizes the window (GTK 4 resizes a shown window through its default size).</summary>
     public void SetSize(int width, int height) => _window.SetDefaultSize(width, height);
@@ -107,6 +127,9 @@ public sealed class ShellWindow
     {
         var current = _window.CurrentBreakpoint;
         if (current is null) return WinoSizeClass.Large;
-        return current.Handle.DangerousGetHandle() == _small.Handle.DangerousGetHandle() ? WinoSizeClass.Small : WinoSizeClass.Medium;
+        return IsCurrent(_small) ? WinoSizeClass.Small : WinoSizeClass.Medium;
     }
+
+    private bool IsCurrent(Adw.Breakpoint breakpoint)
+        => _window.CurrentBreakpoint is { } current && current.Handle.DangerousGetHandle() == breakpoint.Handle.DangerousGetHandle();
 }

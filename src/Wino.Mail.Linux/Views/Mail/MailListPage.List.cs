@@ -78,6 +78,7 @@ public sealed partial class MailListPage
         _listView = Gtk.ListView.New(_selection, factory);
         _listView.AddCssClass("wino-mail-list");
         _listView.ShowSeparators = false;
+        AttachContextMenu();
         _scroller = Gtk.ScrolledWindow.New();
         _scroller.HscrollbarPolicy = Gtk.PolicyType.Never;
         _scroller.Vexpand = true;
@@ -137,6 +138,7 @@ public sealed partial class MailListPage
             _projection = null;
         }
         foreach (var slot in _slots) slot.Subscription = null;
+        ReleaseMailCommands();
         _entries.Clear();
         _entryByKey.Clear();
     }
@@ -415,6 +417,7 @@ public sealed partial class MailListPage
         if (result.Signature == _lastPublishedSelection) return;
         _lastPublishedSelection = result.Signature;
         ViewModel.ApplyMailSelectionSnapshot(result.Snapshot);
+        QueueCommandUpdate();
     }
 
     /// <summary>

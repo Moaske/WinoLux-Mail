@@ -20,7 +20,7 @@ namespace Wino.Mail.Linux.Views.Shell;
 /// <see cref="ShellModeActivator"/>: the provider publishes its menu and navigates its root page into the content
 /// area. The pane becomes an overlay below 1008 px; the content page's header bar carries the sidebar toggle.
 /// </summary>
-public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
+public sealed partial class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
 {
     private const int SidebarWidth = 260;
     private readonly LinuxNavigationService _navigation;
@@ -133,12 +133,14 @@ public sealed class WinoAppShellPage : LinuxPage<WinoAppShellViewModel>
     protected override async Task InitializeAsync(NavigationMode mode, object? parameter)
     {
         ViewModel.OnNavigatedTo(mode, parameter!);
+        AttachShortcuts();
         var start = ShellModeActivator.StartMode(_state, _navigation.IsModeAvailable, ViewModel.PreferencesService.HiddenApplicationModes);
         await ActivateModeAsync(start, new ShellModeActivationContext { IsInitialActivation = true });
     }
 
     protected override async Task DeactivateAsync()
     {
+        DetachShortcuts();
         var child = _child;
         _child = null;
         if (child is not null) await child.ReleaseAsync();

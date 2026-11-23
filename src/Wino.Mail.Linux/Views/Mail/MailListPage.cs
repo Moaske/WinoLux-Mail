@@ -13,8 +13,8 @@ namespace Wino.Mail.Linux.Views.Mail;
 
 /// <summary>
 /// The Mail mode's content page over the shared <see cref="MailListPageViewModel"/>: list and reader in an
-/// <c>AdwNavigationSplitView</c> (list 380 px, reader fills), each with its own header bar; below 641 px they become a
-/// drill-in. The list is <see cref="MailListPage"/>'s List part; the reader column is the rendering frame (ReadingPane
+/// <c>AdwNavigationSplitView</c> (list 380 px, reader fills), each with its own header bar; when the window is too narrow for both
+/// (<see cref="ShellWindow.IsSinglePane"/>) they become a drill-in. The list is <see cref="MailListPage"/>'s List part; the reader column is the rendering frame (ReadingPane
 /// part), which shows <see cref="MailRenderingPage"/> or <see cref="IdlePage"/>.
 /// Activation follows the Mac MailListPageViewController: bind the list, pass the folder to the ViewModel and wait for
 /// its first load, which completes the folder route.
@@ -58,6 +58,7 @@ public sealed partial class MailListPage : LinuxPage<MailListPageViewModel>
         var reader = Adw.ToolbarView.New();
         var readerHeader = Adw.HeaderBar.New();
         readerHeader.ShowTitle = false;
+        BuildReaderCommands(readerHeader);
         reader.AddTopBar(readerHeader);
         _pane.Vexpand = true;
         reader.Content = _pane;
@@ -106,7 +107,7 @@ public sealed partial class MailListPage : LinuxPage<MailListPageViewModel>
 
     private void SizeClassChanged(object? sender, WinoSizeClass sizeClass) => ApplySizeClass(sizeClass);
 
-    private void ApplySizeClass(WinoSizeClass sizeClass) => _split.Collapsed = sizeClass == WinoSizeClass.Small;
+    private void ApplySizeClass(WinoSizeClass sizeClass) => _split.Collapsed = _window.IsSinglePane;
 
     private void OnUI(Action action)
     {
