@@ -11,14 +11,14 @@ The milestones of the Linux port (WinoLux Mail fork). Each milestone is one pull
 | 2a | The shared runtime on Linux: data in the XDG folders, the protection key in the GNOME keyring, the shared startup and shutdown order | [#3](https://github.com/Moaske/WinoLux-Mail/pull/3) |
 | 2b | Adding an IMAP account: Welcome, provider wizard, sign-in and server settings, setup progress | [#4](https://github.com/Moaske/WinoLux-Mail/pull/4) |
 | 2c | The three-pane window: sidebar with accounts and folders, mode switcher, Wino's icon font, three window sizes | [#5](https://github.com/Moaske/WinoLux-Mail/pull/5) |
-| 2d | The message list: sender picture or initials, sender, subject, preview and date; unread, flag and attachment marks; date groups; threads; selecting messages | [#7](https://github.com/Moaske/WinoLux-Mail/pull/7), [#8](https://github.com/Moaske/WinoLux-Mail/pull/8) |
+| 2d | The message list: sender picture or initials, sender, subject, preview and date; unread, flag and attachment marks; date groups; threads; selecting messages | [#7](https://github.com/Moaske/WinoLux-Mail/pull/7), [#8](https://github.com/Moaske/WinoLux-Mail/pull/8), [#9](https://github.com/Moaske/WinoLux-Mail/pull/9) |
+| 2e | The reading pane: the selected message through WebKitGTK, with its attachments and the remote-content bar | [#10](https://github.com/Moaske/WinoLux-Mail/pull/10) |
 
 ## Mail, first pass
 
 | Milestone | What it gives | Status |
 | --- | --- | --- |
-| 2e | The reading pane: the selected message through WebKitGTK, with its attachments | Next |
-| 2f | Working with mail: read and unread, flag, delete, archive, Move, the context menu and keyboard shortcuts | Planned |
+| 2f | Working with mail: read and unread, flag, delete, archive, Move, the context menu and keyboard shortcuts | In review |
 | 2g | Writing mail: new mail, reply and forward in the WebKitGTK editor, drafts, attachments, sending | Planned |
 | 2h | Search | Planned |
 
