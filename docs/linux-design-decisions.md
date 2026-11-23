@@ -128,7 +128,7 @@ Decided by the fork owner on 14 November 2026.
 | `src/Wino.Platform.Linux` | `net10.0` | XDG paths, Secret Service key provider and secure item store, GLib dispatcher, launcher, clipboard, notifications, reminder scheduler, Background portal, reader runtime, presence, authentication hosts; no presentation references |
 | `controls/Wino.Presentation.Gtk` | `net10.0` | GTK twin of `Wino.Presentation.AppKit` and `.Android`: units, WinoIcons, colours as libadwaita CSS, theme surfaces, zones, backdrops, typed bindings |
 | `controls/Wino.Mail.Controls.Gtk` | `net10.0` | Mail and group rows, sidebar rows, avatars, pills, chips, info bar, token field, settings row renderer, calendar surfaces, contact and task rows |
-| `controls/Wino.Editor.Gtk` | `net10.0` | `WebKitWebView` reader and editor sessions over `Wino.Editor.Core`: assets through a registered URI scheme, a script message handler bridge, remote-content policy on resource loads |
+| `controls/Wino.Editor.Gtk` | `net10.0` | `WebKitWebView` reader and editor sessions over `Wino.Editor.Core`, the Apple WebKit sessions' twins: each load is a fresh shell from the shared document builder at `about:blank` (scripts and styles inline with a per-load nonce, remote content governed by the shell's CSP), the `winoMail` script message handler bridge, and a navigation guard that cancels every navigation after the shell load |
 | `build/Wino.Linux.targets` | | Linux build policy, imported when `WinoTargetPlatform` is `Linux` |
 | `WinoMail.Linux.slnx` | | Two folders, `/Linux/` and `/Shared/`, as the Android solution |
 
