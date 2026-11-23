@@ -52,7 +52,7 @@ jobs:
           from email.mime.application import MIMEApplication
           imap = imaplib.IMAP4('127.0.0.1', 3143); imap.login('dave@greenmail.test', 'Smoke-Pw-4711x')
           now = datetime.datetime.now(datetime.timezone.utc)
-          senders = ['Bob Builder <bob@example.test>', 'Carol Lab <carol@example.test>', 'Newsletter <news@example.test>', 'AT&T Billing <billing@att.example>']
+          senders = ['GitHub <notifications@github.com>', 'Carol Lab <carol@example.test>', 'Newsletter <news@example.test>', 'AT&T Billing <billing@att.example>']
           count = 0
           for days in [1, 1, 2, 3, 5, 9, 16, 30, 45, 70] + list(range(80, 160, 2)):
               when = now - datetime.timedelta(days=days, hours=count % 7)
@@ -135,6 +135,9 @@ jobs:
             cmd folder Inbox; sleep 2; cmd shell-state
             cmd mode Calendar; sleep 1; shot sh-2-mode-toast; cmd shell-state
             W=$(xdotool search --name "WinoLux" | head -1); echo "window $W"
+            echo "--- sender pictures: Skia libraries and the picture cache"
+            ls run aot | grep -i skia || echo "no Skia library"
+            find "$HOME/.local/share/WinoLux" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.webp" \) -printf "%s %p\n" | head
             echo "--- mail list checks"
             WAIT=90 cmd mail-state; sleep 10; cmd mail-state
             shot ml-1-list
