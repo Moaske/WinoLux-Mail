@@ -2,6 +2,7 @@
   <Folder Name="/Linux/">
     <Project Path="src/Wino.Mail.Linux/Wino.Mail.Linux.csproj" />
     <Project Path="src/Wino.Platform.Linux/Wino.Platform.Linux.csproj" />
+    <Project Path="controls/Wino.Editor.Gtk/Wino.Editor.Gtk.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="src/Wino.Core.Domain/Wino.Core.Domain.csproj" />

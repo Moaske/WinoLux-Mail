@@ -27,6 +27,16 @@ internal static class WinoStyles
         .wino-mail-flag { color: #E74C3C; }
         .wino-mail-unread-dot { background-color: @accent_bg_color; border-radius: 3px; min-width: 6px; min-height: 6px; }
         .wino-mail-chevron { min-width: 18px; min-height: 18px; padding: 0; }
+        .wino-reader-card { background-color: @view_bg_color; }
+        .wino-link-target { background-color: @popover_bg_color; color: @popover_fg_color; padding: 2px 8px; margin: 6px; border-radius: 6px; font-size: 0.85em; box-shadow: 0 1px 3px alpha(black, 0.25); }
+        .wino-attachment-tile { padding: 2px; }
+        .wino-attachment-badge { color: white; font-size: 0.75em; font-weight: bold; border-radius: 6px; }
+        .wino-attachment-word { background-color: #2B579A; }
+        .wino-attachment-excel { background-color: #217346; }
+        .wino-attachment-powerpoint { background-color: #B7472A; }
+        .wino-attachment-pdf { background-color: #D13438; }
+        .wino-attachment-archive { background-color: #795548; }
+        .wino-attachment-other { background-color: #6E6E73; }
         """;
 
     private static Gtk.CssProvider? _provider;

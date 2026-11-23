@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- WebKitGTK 6.0 reader (and, later, editor) sessions over Wino.Editor.Core for the GTK head (WinoLux fork). The
+       head creates and hosts the WebView; Gir.Core loads libwebkitgtk-6.0 at run time. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Wino.Editor.Gtk</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WinoGtkProject>true</WinoGtkProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GirCore.WebKit-6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wino.Core.Domain/Wino.Core.Domain.csproj" />
+    <ProjectReference Include="../Wino.Editor.Core/Wino.Editor.Core.csproj" />
+  </ItemGroup>
+</Project>

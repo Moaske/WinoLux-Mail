@@ -14,7 +14,8 @@ namespace Wino.Mail.Linux.Views.Mail;
 /// <summary>
 /// The Mail mode's content page over the shared <see cref="MailListPageViewModel"/>: list and reader in an
 /// <c>AdwNavigationSplitView</c> (list 380 px, reader fills), each with its own header bar; below 641 px they become a
-/// drill-in. The list is <see cref="MailListPage"/>'s List part; the reader shows its empty state until milestone 2e.
+/// drill-in. The list is <see cref="MailListPage"/>'s List part; the reader column is the rendering frame (ReadingPane
+/// part), which shows <see cref="MailRenderingPage"/> or <see cref="IdlePage"/>.
 /// Activation follows the Mac MailListPageViewController: bind the list, pass the folder to the ViewModel and wait for
 /// its first load, which completes the folder route.
 /// </summary>
@@ -58,11 +59,8 @@ public sealed partial class MailListPage : LinuxPage<MailListPageViewModel>
         var readerHeader = Adw.HeaderBar.New();
         readerHeader.ShowTitle = false;
         reader.AddTopBar(readerHeader);
-        var empty = Adw.StatusPage.New();
-        empty.Child = WinoIcons.Label(WinoIconGlyph.Mail, 20);
-        empty.Title = Translator.NoMailSelected;
-        empty.AddCssClass("dim-label");
-        reader.Content = empty;
+        _pane.Vexpand = true;
+        reader.Content = _pane;
 
         _split.Sidebar = Adw.NavigationPage.New(list, Translator.KeyboardShortcuts_ModeMail);
         _split.Content = Adw.NavigationPage.New(reader, Translator.NoMailSelected);
@@ -81,6 +79,7 @@ public sealed partial class MailListPage : LinuxPage<MailListPageViewModel>
         _split.ShowContent = false;
 
         BindList();
+        AttachReadingPane();
         ViewModel.OnNavigatedTo(mode, parameter!);
         if (parameter is NavigateMailFolderEventArgs folder)
         {
@@ -95,6 +94,7 @@ public sealed partial class MailListPage : LinuxPage<MailListPageViewModel>
         _window.SizeClassChanged -= SizeClassChanged;
         if (_shell is not null) _shell.SidebarDockedChanged -= SidebarDockedChanged;
         _shell = null;
+        await DetachReadingPaneAsync();
         ReleaseList();
         await ViewModel.DeactivateAsync(NavigationMode.New, null);
     }
