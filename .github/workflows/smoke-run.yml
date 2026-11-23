@@ -25,7 +25,7 @@ jobs:
       - name: Desktop libraries, virtual screen, keyring
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang zlib1g-dev libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring libglib2.0-bin dbus-x11 xvfb imagemagick x11-utils xdotool openbox
+          sudo apt-get install -y clang zlib1g-dev libgtk-4-1 libadwaita-1-0 libsecret-1-0 gnome-keyring libglib2.0-bin dbus-x11 xvfb imagemagick x11-utils xdotool sqlite3 openbox
           cat /etc/os-release | grep PRETTY; dpkg -l | grep -E "libadwaita-1-0|libgtk-4-1 " | awk '{print $2, $3}'
       - name: Publish
         run: |
@@ -160,12 +160,16 @@ jobs:
             sleep 20; cmd page; cmd shell-state; shot sh-6-dark
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- output 5"; cat app5.out
+            echo "--- sixth launch prep: forget every sender picture, so the AOT build fetches them itself"
+            rm -rf "$HOME/.local/share/WinoLux/data/thumbnails"
+            for db in "$HOME"/.local/share/WinoLux/data/Wino*.db; do sqlite3 "$db" "DELETE FROM Thumbnail;" && echo "cleared $db"; done
             echo "--- sixth launch (Native AOT): the shell and message list with the account"
             ( ./aot/WinoLux > app6.out 2>&1; echo "exit code $?" >> app6.out ) &
             sleep 20; shot ml-5-aot
             xdotool mousemove 500 300 click 1; sleep 3; shot ml-6-aot-click
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- output 6"; cat app6.out
+            echo "--- AOT picture cache"; ls -la "$HOME/.local/share/WinoLux/data/thumbnails" || echo "no thumbnails folder"
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in sh-*.png ml-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
