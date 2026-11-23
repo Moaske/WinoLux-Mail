@@ -2,7 +2,7 @@ namespace Wino.Mail.Linux.Presentation;
 
 /// <summary>
 /// The few styles Wino draws itself on top of libadwaita (design decisions, Principles 2): icon glyph sizes, unread
-/// pills and sidebar section headers. Colours come from libadwaita's named colours, so light, dark and the system
+/// pills, sidebar section headers and the mail rows (Windows unread, flag and attachment colours). Colours come from libadwaita's named colours, so light, dark and the system
 /// accent need nothing here.
 /// </summary>
 internal static class WinoStyles
@@ -17,6 +17,16 @@ internal static class WinoStyles
         .wino-sidebar-row { min-height: 34px; }
         .wino-account-row { min-height: 40px; }
         .wino-mode-switcher { margin: 6px; }
+        .wino-mail-list > row { padding: 0; }
+        .wino-mail-group { font-size: 0.8em; font-weight: bold; opacity: 0.7; margin-top: 14px; margin-bottom: 6px; }
+        .wino-mail-row.wino-unread .wino-mail-sender { font-weight: bold; }
+        .wino-mail-row.wino-unread .wino-mail-subject { font-weight: 600; color: @accent_color; }
+        .wino-mail-preview, .wino-mail-date { opacity: 0.7; }
+        .wino-mail-draft { color: @error_color; }
+        .wino-mail-attachment { color: #FDCB6E; }
+        .wino-mail-flag { color: #E74C3C; }
+        .wino-mail-unread-dot { background-color: @accent_bg_color; border-radius: 3px; min-width: 6px; min-height: 6px; }
+        .wino-mail-chevron { min-width: 18px; min-height: 18px; padding: 0; }
         """;
 
     private static Gtk.CssProvider? _provider;
