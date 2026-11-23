@@ -141,7 +141,8 @@ internal sealed class MailRowView
 
         if (content.IsUnread) _row.AddCssClass("wino-unread");
         else _row.RemoveCssClass("wino-unread");
-        _row.TooltipText = content.AccessibilityText;
+        // Screen readers announce the whole row (sender, subject, date, state), as on the Mac and Windows.
+        _row.UpdateProperty([Gtk.AccessibleProperty.Label], [new GObject.Value(content.AccessibilityText)]);
     }
 
     private static Gtk.Label SingleLine(params string[] cssClasses)
