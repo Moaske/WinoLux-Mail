@@ -157,6 +157,12 @@ jobs:
             sleep 20; cmd page; cmd shell-state; shot sh-6-dark
             gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
             echo "--- output 5"; cat app5.out
+            echo "--- sixth launch (Native AOT): the shell and message list with the account"
+            ( ./aot/WinoLux > app6.out 2>&1; echo "exit code $?" >> app6.out ) &
+            sleep 20; shot ml-5-aot
+            xdotool mousemove 500 300 click 1; sleep 3; shot ml-6-aot-click
+            gdbus call --session --dest io.github.moaske.WinoLux --object-path /io/github/moaske/WinoLux --method org.gtk.Actions.Activate quit "[]" "{}" >/dev/null || echo "quit action failed"; sleep 6
+            echo "--- output 6"; cat app6.out
             echo "--- bridge log"; cat "$D/out.log"; echo "--- output 4"; cat app4.out; echo "--- accounts db"; ls -la "$HOME/.local/share/WinoLux/data"
             echo "--- onboarding log"; grep -hiE "error|warn|exception|imap|account|sync|folder" "$HOME"/.local/share/WinoLux/data/Logs/*.log | tail -n 80
             for f in sh-*.png ml-*.png; do convert "$f" -resize 50% -colors 64 "small-$f"; echo "PNGB64 $f $(base64 -w0 small-$f)"; done
