@@ -10,8 +10,9 @@ namespace Wino.Mail.Linux.Infrastructure;
 /// The GTK host of the shared <see cref="NavigationCoordinator"/>, which owns routes, history, back confirmation and the
 /// account lifecycle reactions (the Mac AppKitNavigationService's twin). This class only creates, shows, activates and
 /// releases pages: the main window shows one page at a time (onboarding pages, or the <see cref="WinoAppShellPage"/>),
-/// and the shell shows the mode's content page. Routes come from <see cref="LinuxPageRegistry"/>. Rendering frames,
-/// the secondary onboarding window and Settings arrive with later milestones.
+/// and the shell shows the mode's content page, whose reading pane is the rendering frame
+/// (<see cref="ILinuxRenderingFrameHost"/>). Routes come from <see cref="LinuxPageRegistry"/>. The secondary onboarding
+/// window and Settings arrive with later milestones.
 /// </summary>
 public sealed class LinuxNavigationService : INavigationService, INavigationHost, IDisposable
 {
@@ -22,6 +23,7 @@ public sealed class LinuxNavigationService : INavigationService, INavigationHost
     private readonly NavigationCoordinator _coordinator;
     private ILinuxPage? _current;
     private WinoAppShellPage? _shell;
+    private ILinuxRenderingFrameHost? _renderingHost;
 
     /// <summary>The page in the window, by type name (the debug bridge reports it).</summary>
     internal string? CurrentPageName => _current?.GetType().Name;
@@ -33,6 +35,14 @@ public sealed class LinuxNavigationService : INavigationService, INavigationHost
         _window = window;
         _registry = registry;
         _coordinator = new NavigationCoordinator(this, services, dispatcher);
+    }
+
+    /// <summary>The page whose reading pane shows rendering-frame pages (the Mail page while it is shown).</summary>
+    public void AttachRenderingHost(ILinuxRenderingFrameHost host) => _renderingHost = host;
+
+    public void DetachRenderingHost(ILinuxRenderingFrameHost host)
+    {
+        if (ReferenceEquals(_renderingHost, host)) _renderingHost = null;
     }
 
     /// <summary>The shell while it is in the window.</summary>
@@ -72,7 +82,12 @@ public sealed class LinuxNavigationService : INavigationService, INavigationHost
     bool INavigationHost.IsSecondaryWindowShown => false;
     bool INavigationHost.IsSettingsAvailable => false;
 
-    Task INavigationHost.ShowInRenderingFrameAsync(WinoPage page, object? parameter) => Task.CompletedTask;
+    async Task INavigationHost.ShowInRenderingFrameAsync(WinoPage page, object? parameter)
+    {
+        if (_renderingHost is not { } host) return;
+        var next = await CreatePageAsync(page, parameter);
+        await host.ShowAsync(next, parameter);
+    }
 
     async Task INavigationHost.SetShellContentAsync(WinoPage page, object? parameter)
     {
@@ -120,6 +135,7 @@ public sealed class LinuxNavigationService : INavigationService, INavigationHost
         var current = _current;
         _current = null;
         _shell = null;
+        _renderingHost = null;
         if (current is not null) await current.ReleaseAsync();
     }
 

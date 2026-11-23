@@ -433,6 +433,32 @@ public sealed class LinuxDialogService(IDispatcher dispatcher, ShellWindow windo
 
     #endregion
 
+    #region Files
+
+    /// <summary>
+    /// The GTK folder chooser (through the file chooser portal where one runs) on the main window. Answers the folder's
+    /// local path, or an empty string when cancelled or when the chosen folder has no local path.
+    /// </summary>
+    public async Task<string> PickWindowsFolderAsync()
+    {
+        await _presentations.WaitAsync();
+        try
+        {
+            Task<Gio.File?>? picking = null;
+            await dispatcher.ExecuteOnUIThread(() =>
+            {
+                var chooser = Gtk.FileDialog.New();
+                chooser.Modal = true;
+                picking = chooser.SelectFolderAsync(window.Widget as Gtk.Window);
+            });
+            try { return (picking is null ? null : await picking)?.GetPath() ?? string.Empty; }
+            catch (GLib.GException) { return string.Empty; }
+        }
+        finally { _presentations.Release(); }
+    }
+
+    #endregion
+
     #region Not built for Linux yet
 
     private T NotYet<T>(T cancelled, string feature)
@@ -445,7 +471,6 @@ public sealed class LinuxDialogService(IDispatcher dispatcher, ShellWindow windo
     public Task<List<SharedFile>> PickFilesAsync(params object[] typeFilters) => Task.FromResult(NotYet(new List<SharedFile>(), "File picking"));
     public Task<byte[]> PickWindowsFileContentAsync(params object[] typeFilters) => Task.FromResult(NotYet(Array.Empty<byte>(), "File picking"));
     public Task<List<PickedFileMetadata>> PickFilesMetadataAsync(params object[] typeFilters) => Task.FromResult(NotYet(new List<PickedFileMetadata>(), "File picking"));
-    public Task<string> PickWindowsFolderAsync() => Task.FromResult(NotYet(string.Empty, "Folder picking"));
     public Task<string> PickFilePathAsync(string saveFileName) => Task.FromResult(NotYet(string.Empty, "Saving files"));
 
     public Task HandleSystemFolderConfigurationDialogAsync(Guid accountId, IFolderService folderService) => Task.FromResult(NotYet(0, "System folder configuration"));

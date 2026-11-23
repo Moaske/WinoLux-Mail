@@ -4503,5 +4503,6 @@
   "OpenLinkDialog_OpensIn": "Opens in {0}.",
   "OpenLinkDialog_OpenLink": "Open link",
   "PrivacySecurity_AboutLogs_Title": "Diagnostic logs",
-  "PrivacySecurity_AboutLogs_Description": "Share or upload the local log when you report a problem. Turn logging on or off in Privacy & security."
+  "PrivacySecurity_AboutLogs_Description": "Share or upload the local log when you report a problem. Turn logging on or off in Privacy & security.",
+  "Linux_Reader_WebKitMissing": "Messages can't be shown because WebKitGTK isn't installed. Install the {0} package, then restart WinoLux Mail."
 }

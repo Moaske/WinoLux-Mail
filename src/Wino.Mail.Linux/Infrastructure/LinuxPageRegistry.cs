@@ -23,6 +23,8 @@ public sealed class LinuxPageRegistry
         Register<SpecialImapCredentialsPage>(WinoPage.SpecialImapCredentialsPage, NavigationHostKind.Window);
         Register<AccountSetupProgressPage>(WinoPage.AccountSetupProgressPage, NavigationHostKind.Window);
         Register<MailListPage>(WinoPage.MailListPage, NavigationHostKind.ShellContent);
+        Register<MailRenderingPage>(WinoPage.MailRenderingPage, NavigationHostKind.RenderingFrame);
+        Register<IdlePage>(WinoPage.IdlePage, NavigationHostKind.RenderingFrame);
         // Editing an account's servers belongs to Settings, which arrives later; adding an account uses the window.
         Register<ImapCalDavSettingsPage>(WinoPage.ImapCalDavSettingsPage, NavigationHostKind.Window);
         _hostResolvers[WinoPage.ImapCalDavSettingsPage] = parameter =>

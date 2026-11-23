@@ -146,6 +146,16 @@ public sealed class InfoBar
     {
         set { _message.SetText(value ?? string.Empty); _message.Visible = !string.IsNullOrEmpty(value); }
     }
+
+    /// <summary>Adds the bar's action button (the Windows InfoBar ActionButton) at the trailing edge.</summary>
+    public void SetAction(string title, Action invoked)
+    {
+        var button = Gtk.Button.NewWithLabel(title);
+        button.Valign = Gtk.Align.Center;
+        button.MarginEnd = 12;
+        button.OnClicked += (_, _) => invoked();
+        Widget.Append(button);
+    }
 }
 
 public enum InfoBarSeverity

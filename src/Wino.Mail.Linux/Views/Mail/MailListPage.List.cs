@@ -419,7 +419,8 @@ public sealed partial class MailListPage
 
     /// <summary>
     /// Debug bridge commands: <c>mail-state</c> (rows, selection and the first rows' text) and <c>mail-select N...</c>
-    /// (selects mail rows by their position among the mail rows, group headers not counted).
+    /// (selects mail rows by their position among the mail rows, group headers not counted, or the first row whose subject
+    /// contains the given text).
     /// </summary>
     private void RegisterListDebugCommands()
     {
@@ -443,7 +444,15 @@ public sealed partial class MailListPage
         {
             if (_released) return Task.FromResult("released");
             var positions = new List<uint>();
-            foreach (var arg in args.Length == 0 ? ["0"] : args)
+            if (args.Length > 0 && !int.TryParse(args[0], out _))
+            {
+                // Text: the first mail row whose subject contains it.
+                var text = string.Join(' ', args);
+                int match = _entries.FindIndex(entry => entry.Row is { } row && MailRowPresentation.Describe(row) is { } content
+                    && content.Subject.Contains(text, StringComparison.OrdinalIgnoreCase));
+                if (match >= 0) positions.Add((uint)match);
+            }
+            else foreach (var arg in args.Length == 0 ? ["0"] : args)
             {
                 int index = int.TryParse(arg, out var ordinal) ? MailEntryIndex(ordinal) : -1;
                 if (index >= 0) positions.Add((uint)index);
