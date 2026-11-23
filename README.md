@@ -1,5 +1,10 @@
 ## An unofficial Linux port of Wino Mail by bkaankose
 
+> [!IMPORTANT]
+> **This fork has stopped and is archived.** Wino Mail now has an official Linux app (beta, amd64), built by its developer with GTK 4 and libadwaita: a `.deb` for Ubuntu and Debian, a package for Arch and Omarchy, and an `.rpm` for Fedora. Get it from the [Wino Mail repository](https://github.com/bkaankose/Wino-Mail#download) or [winomail.app](https://www.winomail.app/download). For Ubuntu, download the [`.deb`](https://download.winomail.app/linux/beta/wino-mail_amd64.deb) and open it, or run `sudo apt install ./wino-mail_amd64.deb`.
+>
+> The WinoLux work stays here for reference. It got as far as adding an IMAP account, the three-pane window, the message list and the reading pane (milestones 0 to 2e in [the roadmap](docs/linux-roadmap.md)).
+
 <p align="center">
   <a href="https://apps.microsoft.com/detail/Wino%20Mail/9NCRCVJC50WL?launch=true&mode=full">
     <img src="https://www.winomail.app/logo.png" width="90" height="90" alt="Wino Mail logo">
