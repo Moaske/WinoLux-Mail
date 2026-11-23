@@ -71,5 +71,6 @@ internal static class LinuxComposition
         services.AddTransient<AccountSetupProgressPage>();
         services.AddTransient<WinoAppShellPage>();
         services.AddTransient<MailListPage>();
+        services.AddSingleton<LinuxSenderPictureProvider>();
     }
 }
